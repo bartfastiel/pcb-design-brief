@@ -200,9 +200,10 @@ from the current sources (PR-4).
    evenly spaced. Followed by the calculation table (CI-1).
 3. **Board.** Perspective render from above, assembled, as close to the real thing as possible.
 4. **Layer stack.** Perspective exploded view, layers pulled apart, realistic look. From top:
-   top parts, top silkscreen, top mask, top copper, core (drawn thicker, holes clearly visible),
+   top parts, top silkscreen, top mask, top copper, core (holes clearly visible),
    bottom copper, bottom mask, bottom silkscreen, bottom parts. More layers for multilayer
-   boards; empty layers are left out. Every layer is shown as it is stacked in the product, so
+   boards; empty layers are left out. Every layer keeps its true thickness relative to length and width;
+   only the gaps between the layers are invented. Every layer is shown as it is stacked in the product, so
    the bottom side appears as seen from above (mirrored text). Each layer has a black dot with a
    horizontal leader line to its label: name, material, properties, thickness. Layer and label
    link to the layer detail.

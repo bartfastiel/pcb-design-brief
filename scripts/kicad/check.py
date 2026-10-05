@@ -21,9 +21,9 @@ def find_cli(given):
     raise SystemExit("kicad-cli not found; pass --kicad-cli or set KICAD_CLI")
 
 
-def run(cli, kind, source, report):
+def run(cli, kind, source, report, parity=True):
     args = [cli, kind, "erc" if kind == "sch" else "drc", "--severity-all", "--format", "json", "-o", report]
-    if kind == "pcb":
+    if kind == "pcb" and parity:
         args.insert(3, "--schematic-parity")
     subprocess.run(args + [source], capture_output=True, text=True)
     with open(report, encoding="utf-8") as handle:
@@ -44,6 +44,7 @@ def main():
     parser.add_argument("project", help=".kicad_pro, .kicad_sch or .kicad_pcb (the others are found by name)")
     parser.add_argument("--kicad-cli")
     parser.add_argument("--keep", help="directory for the JSON reports")
+    parser.add_argument("--pcb-only", action="store_true", help="no schematic: DRC without parity, no ERC")
     args = parser.parse_args()
 
     stem = os.path.splitext(args.project)[0]
@@ -51,13 +52,14 @@ def main():
     out = args.keep or tempfile.mkdtemp()
     os.makedirs(out, exist_ok=True)
     total = 0
-    for kind, ext in (("sch", ".kicad_sch"), ("pcb", ".kicad_pcb")):
+    kinds = [("pcb", ".kicad_pcb")] if args.pcb_only else [("sch", ".kicad_sch"), ("pcb", ".kicad_pcb")]
+    for kind, ext in kinds:
         source = stem + ext
         if not os.path.exists(source):
             print(f"{ext}: missing")
             total += 1
             continue
-        items = findings(run(cli, kind, source, os.path.join(out, f"{kind}.json")))
+        items = findings(run(cli, kind, source, os.path.join(out, f"{kind}.json"), not args.pcb_only))
         total += len(items)
         print(f"{'ERC' if kind == 'sch' else 'DRC'}: {len(items)} finding(s)")
         for item in items:

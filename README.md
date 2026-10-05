@@ -23,6 +23,15 @@ the soldering iron; spare solder fields in free copper on prototypes; zero ERC/D
 virtual enclosure assembly with zero intersections; a review PDF from the exploded product
 render down to per-supplier parts lists and the fab order settings.
 
+## Example
+
+[examples/led-dimmer](examples/led-dimmer/) walks through a small 5 V LED-strip dimmer: the filled intake, the
+commands an agent runs, the results and the closing deviation report.
+
+| Assembled board | Layer stack, to scale |
+|---|---|
+| <img src="examples/led-dimmer/images/board.png" alt="Rendered example board" width="420"> | <img src="examples/led-dimmer/images/layer-stack.png" alt="Exploded layer stack" width="260"> |
+
 ## Using it with an agent
 
 Pick one:
@@ -46,7 +55,7 @@ paths elsewhere.
 
 | Script | Rule | What it does |
 |---|---|---|
-| [scripts/kicad/check.py](scripts/kicad/check.py) | §4 gates | ERC, DRC with parity, fails on any warning, prints a summary |
+| [scripts/kicad/check.py](scripts/kicad/check.py) | §4 gates | ERC, DRC with parity, fails on any warning, prints a summary (`--pcb-only` without schematic) |
 | [scripts/kicad/untent_vias.py](scripts/kicad/untent_vias.py) | HS-5 | removes solder mask from every via on both sides |
 | [scripts/kicad/joker_fields.py](scripts/kicad/joker_fields.py) | JF-1 … JF-5 | computes spare solder fields in the free copper and adds them as one board-only footprint |
 | [scripts/review/layer_images.py](scripts/review/layer_images.py) | §12.5 | one presence-coloured PNG per board layer from `kicad-cli` SVG exports |

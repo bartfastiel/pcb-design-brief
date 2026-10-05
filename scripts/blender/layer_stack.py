@@ -3,7 +3,7 @@
 Input is a GLB from
   kicad-cli pcb export glb --include-tracks --include-pads --include-silkscreen --include-soldermask board.kicad_pcb
 Run:
-  blender -b --python layer_stack.py -- board.glb out.png [--gap 14] [--core-scale 2.5] [--light 0.05] [--background 0.94] [--size 1800x1500] [--samples 96]
+  blender -b --python layer_stack.py -- board.glb out.png [--gap 14] [--core-scale 1] [--light 0.05] [--background 0.94] [--size 1800x1500] [--samples 96]
 Writes out.png and out.json: per layer its name, the screen point for a label leader (rightmost point of the layer)
 and the screen bounding box, in pixels, so labels and PDF links can be added afterwards. Empty layers are left out."""
 import json
@@ -22,7 +22,7 @@ ORDER = ["parts_top", "silk_top", "mask_top", "copper_top", "core", "copper_bott
 
 def args():
     argv = sys.argv[sys.argv.index("--") + 1:]
-    opts = {"gap": 14.0, "core_scale": 2.5, "size": "1800x1500", "samples": 96, "elevation": 30.0, "azimuth": -22.0,
+    opts = {"gap": 14.0, "core_scale": 1.0, "size": "1800x1500", "samples": 96, "elevation": 30.0, "azimuth": -22.0,
             "light": 0.05, "ambient": 0.25, "background": 0.94}
     pos = []
     i = 0
@@ -189,6 +189,7 @@ def frame_camera(objects, elevation, azimuth, size, margin=1.08):
     scene.render.resolution_x, scene.render.resolution_y = w, h
     cam_data = bpy.data.cameras.new("cam")
     cam_data.lens = 70
+    cam_data.clip_start = 1e-4
     cam = bpy.data.objects.new("cam", cam_data)
     scene.collection.objects.link(cam)
     scene.camera = cam

@@ -186,6 +186,7 @@ def main():
     cam_spec = spec.get("camera", {})
     cam_data = bpy.data.cameras.new("cam")
     cam_data.lens = cam_spec.get("lens", 60)
+    cam_data.clip_start = 1e-4
     cam = bpy.data.objects.new("cam", cam_data)
     scene.collection.objects.link(cam)
     scene.camera = cam
