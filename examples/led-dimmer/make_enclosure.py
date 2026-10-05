@@ -1,4 +1,5 @@
-"""Minimal two-part enclosure for the example board, as STL in the assembled position (needs manifold3d, trimesh).
+"""Minimal two-part enclosure for the example board: STL in the assembled position, the lid also as printed
+(lid-print.stl, plate on the bed). Needs manifold3d, trimesh.
 Base with four seats and three connector slots, lid with a locating lip. Usage: python make_enclosure.py <out dir>"""
 import os
 import sys
@@ -43,6 +44,10 @@ def main():
     board = box(ox, oy, board_z, ox + BOARD[0], oy + BOARD[1], board_z + BOARD[2])
     for name, solid in (("base", base), ("lid", lid), ("board", board)):
         to_trimesh(solid).export(os.path.join(out, name + ".stl"))
+    lid_print = to_trimesh(lid)
+    lid_print.apply_transform(trimesh.transformations.rotation_matrix(np.pi, [1, 0, 0]))
+    lid_print.apply_translation(-lid_print.bounds[0])
+    lid_print.export(os.path.join(out, "lid-print.stl"))
     print(f"outer {OUTER[0]:.1f} x {OUTER[1]:.1f} x {BASE_H + LID_T:.1f} mm")
 
 

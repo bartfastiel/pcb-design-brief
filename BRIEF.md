@@ -60,7 +60,7 @@ Check and report versions. Install only with permission (IN-9).
 | 2 Circuit | schematic, calculation table | ERC 0 (errors **and** warnings); every part sized by calculation (§6) |
 | 3 Sourcing | BOM with suppliers | everything orderable, budget holds, otherwise back to 2 |
 | 4 Layout | PCB, fab files | DRC 0 incl. warnings, schematic parity 0, unconnected 0 |
-| 5 Enclosure | print files | assembly check (§9) passes |
+| 5 Enclosure | print files | assembly check (§9) and printability check (FDM-8) pass |
 | 6 Review PDF | PDF | complete (§12), every page looked at |
 | 7 Handover | commit, push, summary | definition of done (§14) |
 
@@ -164,6 +164,29 @@ Applies when IN-2 is "hand".
   views. Red may show only at planned openings.
 - **AC-5** Outer faces flush, boards held within tolerance, walls ≥ the minimum of EN-4.
 
+## 9a 3D printing (FDM)
+
+Printability is decided by geometry, not by hope. Design every printed part for one print orientation, check it
+with numbers, and show the result as a picture.
+
+- **FDM-1** Choose the print orientation before modelling. It is part of the source; the STL is exported in it
+  (z up, bed face at the bottom).
+- **FDM-2** Overhang ≤ 45° from vertical without support. Downward-facing edges get 45° chamfers, not fillets or
+  horizontal ledges; holes in vertical walls get a teardrop or flat top.
+- **FDM-3** Bridges ≤ 10 mm and only between two supported ends. Counterbores that end in a head seat print the
+  first bridging layer as a slot, the next as a square, then the hole.
+- **FDM-4** No floating islands: every region of every layer rests on the layer below.
+- **FDM-5** Every feature in every layer ≥ 2 × nozzle width (0.8 mm with a 0.4 mm nozzle); load-bearing walls
+  ≥ 1.2 mm. Fits: 0.2 mm clearance per side; heat-set insert holes per the maker's table.
+- **FDM-6** Text only where it prints well: raised (≥ 0.6 mm) or engraved on faces that are on top while printing,
+  or on vertical walls; never on the bed face. Cap height ≥ 5 mm, bold sans serif, strokes ≥ 0.8 mm.
+- **FDM-7** A flat bed face of ≥ 15 % of the footprint. No thin plates with free corners (they warp): close the
+  walls into rings or add ribs.
+- **FDM-8** Proof: an automatic check of FDM-2 … FDM-7 per part (PASS required) plus four views with every downward
+  face coloured by what the printer has to do there (support needed red, bridge orange, too-long bridge violet, bed
+  blue) and the layer with the thinnest features. Numbers and coordinates for the agent, the picture for the
+  human. Cross-check once in the slicer: no support generated.
+
 ## 10 Sourcing
 
 - **SO-1** Check the usual electronics shops for the delivery country (IN-6), preferred ones
@@ -219,7 +242,8 @@ from the current sources (PR-4).
    Below each table a red list of parts not available there. Special parts as separate entries
    with their extra sources. Include the mechanics (SO-4).
 7. **Enclosure, technical.** One sheet with all printed parts: three orthographic views plus
-   one isometric view each, main dimensions, first-angle projection (ISO). Screws and inserts in
+   one isometric view each, main dimensions, first-angle projection (ISO). The printability sheets
+   of FDM-8. Screws and inserts in
    detail with load calculation and material. Material recommendation and cost. Heat
    calculation with maximum ambient temperature (EN-3). Radio check (EN-1).
 8. **Assembly check.** The six views of AC-4, the intersection table (AC-2), the assembly order
@@ -246,7 +270,7 @@ from the current sources (PR-4).
 - [ ] ERC, DRC, parity, unconnected: 0, warnings included
 - [ ] calculation table complete, every part within CI-2
 - [ ] all parts orderable, cost within budget
-- [ ] enclosure assembly check passes (AC-1 … AC-5)
+- [ ] enclosure assembly check passes (AC-1 … AC-5), printability PASS for every printed part (FDM-8)
 - [ ] every derived image and the PDF regenerated from the current sources and looked at
 - [ ] review PDF complete per §12, no open items except physical ones
 - [ ] deliverables (§11) present, everything committed and pushed

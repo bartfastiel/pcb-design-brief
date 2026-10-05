@@ -60,6 +60,7 @@ paths elsewhere.
 | [scripts/kicad/joker_fields.py](scripts/kicad/joker_fields.py) | JF-1 … JF-5 | computes spare solder fields in the free copper and adds them as one board-only footprint |
 | [scripts/review/layer_images.py](scripts/review/layer_images.py) | §12.5 | one presence-coloured PNG per board layer from `kicad-cli` SVG exports |
 | [scripts/review/assembly_check.py](scripts/review/assembly_check.py) | AC-2, AC-4 | pairwise intersection volumes and six orthographic views with inward faces in signal red |
+| [scripts/review/printability.py](scripts/review/printability.py) | FDM-2 … FDM-8 | overhangs, bridge spans, floating islands, features below 2 × nozzle in any layer, bed contact; PASS/FAIL with coordinates and a coloured picture per part |
 | [scripts/review/tech_drawing.py](scripts/review/tech_drawing.py) | §12.7 | technical drawing sheet (three views plus isometric, main dimensions) from STL files |
 | [scripts/blender/layer_stack.py](scripts/blender/layer_stack.py) | §12.4 | photo-realistic exploded layer stack from a KiCad GLB export, with label anchors and link boxes as JSON |
 | [scripts/blender/exploded_scene.py](scripts/blender/exploded_scene.py) | §12.1, §12.3 | studio render of a JSON scene (STL, GLB, simple boxes, cables), screen boxes per part as JSON for PDF links |
@@ -71,6 +72,9 @@ Python scripts print `--help`; the Blender scripts take their arguments after `-
 - *Why spare solder fields?* Prototypes always miss a part. Exposed fields on a 2.54 mm grid turn
   free copper into perfboard, without touching the functional circuit (1 mm clearance).
 - *Why open vias?* They are free test points and rework spots on a hand-soldered board.
+- *How do agents avoid unprintable shapes?* Rules FDM-1 … FDM-8 give hard limits, and `printability.py` turns
+  them into a gate: the agent gets FAIL with layer height and coordinates, the human gets a picture where every
+  surface that needs support is red.
 - *Why zero warnings?* A warning that is "fine" today hides the one that is not tomorrow. If a
   rule cannot be met, the deviation is reported by ID instead.
 - *Why a 30-page PDF for a small board?* Because it replaces the review meeting: every decision,

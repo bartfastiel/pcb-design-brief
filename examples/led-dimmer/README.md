@@ -70,6 +70,17 @@ show only through the connector slots (the two slots in line let you look straig
 
 <img src="images/assembly-check.png" alt="Six orthographic views of the closed enclosure" width="640">
 
+**Printability (FDM-8).** The same lid twice: as designed (plate on the bed) it passes; upside down the check
+fails with a 37.6 mm bridge (violet) and a ledge that needs support (red), and the agent gets the coordinates:
+
+| Lid, plate on the bed: PASS | Lid upside down: FAIL |
+|---|---|
+| <img src="images/printability-lid-ok.png" alt="Printability check passes" width="360"> | <img src="images/printability-lid-upside-down.png" alt="Printability check fails" width="360"> |
+
+```sh
+python ../../scripts/review/printability.py base=enclosure/base.stl lid=enclosure/lid-print.stl -o printability
+```
+
 **Technical drawing (§12.7):**
 
 <img src="images/tech-drawing.png" alt="Technical drawing of base and lid" width="560">
