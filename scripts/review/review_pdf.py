@@ -2,11 +2,12 @@
 
   python review_pdf.py review.json out.pdf
 
-Sections, each optional: overview, schematic, calculations, board, stack, layers, parts, enclosure, printability,
-assembly, instructions. See examples/led-dimmer/review.json for every key. Needs reportlab, pymupdf, pillow."""
+Sections, each optional: overview, schematic, calculations, board, stack, layers, parts, offers, design_to_cost,
+enclosure, printability, assembly, firmware, instructions. See examples/led-dimmer/review.json for every key. Needs reportlab, pymupdf, pillow."""
 import datetime
 import json
 import os
+import re
 import sys
 
 import pymupdf
@@ -169,18 +170,28 @@ def stack(d, s, layer_keys):
     y = d.new("stack", "Layer stack")
     info = json.load(open(d.path(s["anchors"]), encoding="utf-8"))
     img_w = (P_W - 2 * M) * 0.6
-    x, y0, w, h = d.image(s["image"], M - 4 * mm, y, img_w, y - M - 26 * mm)
+    shift = 10 * mm if s.get("dimensions") else 0
+    x, y0, w, h = d.image(s["image"], M - 4 * mm, y - shift, img_w, y - shift - M - 26 * mm)
     k = w / info["size"][0]
     label_x = M + img_w + 2 * mm
+    text_y, last = {}, None
+    for name in info["order"]:
+        wanted = y0 + h - info["layers"][name]["anchor"][1] * k
+        text_y[name] = wanted if last is None else min(wanted, last - 11 * mm)
+        last = text_y[name]
     for name in info["order"]:
         layer = info["layers"][name]
         ax, ay = x + layer["anchor"][0] * k, y0 + h - layer["anchor"][1] * k
+        ty = text_y[name]
         bx0, by0, bx1, by1 = layer["bbox"]
         target = "layer-" + name if name in layer_keys else "stack"
         d.link(target, x + bx0 * k, y0 + h - by1 * k, x + bx1 * k, y0 + h - by0 * k)
         d.c.setLineWidth(0.6)
-        d.c.line(ax, ay, label_x - 1.5 * mm, ay)
+        bend = label_x - 5 * mm
+        d.c.line(ax, ay, bend, ay)
+        d.c.line(bend, ay, label_x - 1.5 * mm, ty)
         d.c.circle(ax, ay, 1.1 * mm, stroke=0, fill=1)
+        ay = ty
         title, material, props, thick = s["labels"][name]
         d.c.setFont(BOLD, 8.6)
         d.c.setFillColor(colors.HexColor(LINK))
@@ -190,6 +201,11 @@ def stack(d, s, layer_keys):
         d.c.drawString(label_x, ay - 2.2 * mm, f"{material}; {props}")
         d.c.drawString(label_x, ay - 5.2 * mm, f"thickness {thick}")
         d.link(target, label_x, ay - 6 * mm, P_W - M, ay + 4 * mm)
+    if s.get("dimensions"):
+        d.c.setFont(BOLD, 13)
+        d.c.drawString(M, y - 1 * mm, s["dimensions"])
+        d.c.setFont(FONT, 8.5)
+        d.c.drawString(M, y - 6 * mm, s.get("dimensions_note", ""))
     d.para(s["caption"], M, M + 22 * mm, P_W - 2 * M)
 
 
@@ -229,6 +245,50 @@ def parts(d, s):
         y = d.new("parts-special", "Parts list: special parts, PCB, enclosure material", land=True)
         for block in s["special"]:
             y = d.para(block, M, y, L_W - 2 * M) - 2.5 * mm
+
+
+def offers(d, s):
+    y = d.new("offers", "PCB manufacture and assembly: offers", land=True)
+    y = d.para(s.get("text", ""), M, y, L_W - 2 * M)
+    for title, key, cols in (("PCB", "pcb", ("Fab", "Settings", "Qty", "Landed total", "Lead time", "Notes")),
+                             ("Assembly", "assembly", ("Assembler", "Basis", "Qty", "Total", "Lead time", "Notes"))):
+        rows = [cells(cols, CELL_B)]
+        for o in s.get(key, []):
+            rows.append(cells((url(o["name"], o.get("url")), o.get("settings", ""), o.get("qty", ""), o.get("total", ""),
+                               o.get("lead_time", ""), o.get("notes", ""))))
+        y = d.para(f"<b>{title}</b>", M, y - 3 * mm, L_W - 2 * M)
+        y = d.table(rows, [40 * mm, 60 * mm, 16 * mm, 26 * mm, 34 * mm, 93 * mm], M, y - 1.5 * mm)
+
+
+def design_to_cost(d, s):
+    y = d.new("design-to-cost", "Design to cost", land=True)
+    y = d.para(s.get("text", ""), M, y, L_W - 2 * M)
+    rows = [cells(("Version", "Parts", "Shipping", "Per-part fees", "Total", "Distinct parts", "Area"), CELL_B)]
+    for label, r in s["versions"]:
+        rows.append(cells((label, f"{r['parts']:.2f}", f"{r['shipping']:.2f}", f"{r['fixed']:.2f}", f"<b>{r['total']:.2f}</b>",
+                           r["distinct"], f"{r['area_mm2']} mm²")))
+    y = d.table(rows, [40 * mm, 30 * mm, 26 * mm, 30 * mm, 26 * mm, 30 * mm, 24 * mm], M, y - 3 * mm)
+    rows = [cells(("Refs", "Function", "First version", "Optimised", "Why it still meets the requirement"), CELL_B)]
+    for c in s["changes"]:
+        rows.append(cells((", ".join(c["refs"]), c["function"], c["from"], c["to"], c["why"])))
+    d.table(rows, [40 * mm, 40 * mm, 50 * mm, 45 * mm, 94 * mm], M, y - 5 * mm)
+
+
+def firmware(d, s):
+    y = d.new("firmware", "Firmware and flashing", land=True)
+    col = (L_W - 2 * M) * 0.6
+    mono = ParagraphStyle("mono", fontName="Courier", fontSize=6.3, leading=7.6)
+    prompt = open(d.path(s["prompt"]), encoding="utf-8").read().strip()
+    d.para("<b>Prompt for a coding agent</b> (complete, no questions needed):", M, y, col)
+    escaped = prompt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace(chr(10), "<br/>")
+    d.para(escaped, M, y - 5 * mm, col - 4 * mm, mono)
+    xr = M + col + 2 * mm
+    yr = d.para("<b>Flashing</b>", xr, y, L_W - M - xr)
+    text = open(d.path(s["flashing"]), encoding="utf-8").read().strip()
+    for line in re.sub(r"\n\s+", " ", text).split(chr(10)):
+        line = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        line = re.sub(r"`([^`]*)`", r"<font face='Courier'>\g<1></font>", line)
+        yr = d.para(line, xr, yr - 1.2 * mm, L_W - M - xr)
 
 
 def enclosure(d, s):
@@ -317,8 +377,9 @@ def main():
             fn(d, spec[key])
     if "stack" in spec:
         stack(d, spec["stack"], layer_keys)
-    for key, fn in (("layers", layers), ("parts", parts), ("enclosure", enclosure), ("printability", printability),
-                    ("assembly", assembly), ("instructions", instructions)):
+    for key, fn in (("layers", layers), ("parts", parts), ("offers", offers), ("design_to_cost", design_to_cost),
+                    ("enclosure", enclosure), ("printability", printability), ("assembly", assembly),
+                    ("firmware", firmware), ("instructions", instructions)):
         if key in spec:
             fn(d, spec[key])
     d.c.save()

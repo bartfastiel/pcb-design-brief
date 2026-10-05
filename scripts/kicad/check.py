@@ -45,6 +45,7 @@ def main():
     parser.add_argument("--kicad-cli")
     parser.add_argument("--keep", help="directory for the JSON reports")
     parser.add_argument("--pcb-only", action="store_true", help="no schematic: DRC without parity, no ERC")
+    parser.add_argument("--sch-only", action="store_true", help="no board yet: ERC only")
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -53,7 +54,8 @@ def main():
     out = args.keep or tempfile.mkdtemp()
     os.makedirs(out, exist_ok=True)
     total = 0
-    kinds = [("pcb", ".kicad_pcb")] if args.pcb_only else [("sch", ".kicad_sch"), ("pcb", ".kicad_pcb")]
+    kinds = [("sch", ".kicad_sch"), ("pcb", ".kicad_pcb")]
+    kinds = kinds[1:] if args.pcb_only else kinds[:1] if args.sch_only else kinds
     for kind, ext in kinds:
         source = stem + ext
         if not os.path.exists(source):

@@ -45,9 +45,9 @@ Anything unknown that blocks nothing becomes a named, flagged assumption, not a 
    it in the review PDF.
 8. **Easy for the hands** that solder, test and rework it.
 
-## 3 Prerequisites
+## 3 Prerequisites and tools
 
-Check and report versions. Install only with permission (IN-9).
+Check and report versions (`python -m pcbtools doctor` lists all of them). Install only with permission (IN-9).
 
 - git
 - KiCad ≥ 8 with `kicad-cli` and its bundled Python (`pcbnew`)
@@ -56,6 +56,14 @@ Check and report versions. Install only with permission (IN-9).
   for the enclosure
 - Python: `pymupdf`, `reportlab`, `pillow`, `numpy`, `trimesh`, `manifold3d`
 - Playwright, if browser automation is allowed
+
+Tools before tokens (details: [docs/automation.md](docs/automation.md)):
+
+- **TL-1** Decide what needs judgement, automate the rest. The agent writes data (`design.json`,
+  `bom-options.json`, `review.json`); `pcbtools` turns it into schematic, board, checks, costs, renders and the PDF.
+- **TL-2** Never hand-edit generated KiCad files. A fix goes into the data or into a tool, then the step runs again.
+- **TL-3** A step done by hand twice becomes a tool (or a tool option) the third time.
+- **TL-4** Numbers in prose come from tool output files, never retyped.
 
 ## 4 Workflow and gates
 
@@ -133,6 +141,7 @@ Applies when IN-2 is "hand".
   | electrolytic capacitor | ≤ 80 % of rated voltage, 105 °C type |
   | semiconductor | ≤ 50–70 % of absolute-maximum voltage, current, power; Tj ≤ 100 °C |
   | connector, wire | ≤ 70 % of rated current |
+  | IC supply and inputs | inside the recommended operating conditions over the whole tolerance range; stress limits (current, power, temperature) as for semiconductors |
 
 - **CI-3** Robust values: no needlessly high-impedance nodes, ADC sources ≤ about 10 kΩ or
   buffered by a capacitor, pull-ups 1–10 kΩ, no µA currents that pick up noise. Define the safe

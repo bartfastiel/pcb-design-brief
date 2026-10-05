@@ -38,5 +38,6 @@ linked terms before use.
   public price calculators by hand.
 - **CAD data** (symbols, footprints, 3D models): Ultra Librarian, SnapMagic.
 
-`scripts/sourcing/bom_cost.py` reads offers from these APIs (or from a cached JSON) and searches for the cheapest
-consistent BOM for a series size.
+`python -m pcbtools parts` queries Nexar, DigiKey, Mouser and Farnell with the keys found in the environment
+(parametric search, offers, a part × supplier table) and caches the results; `python -m pcbtools cost` searches the
+cheapest consistent BOM for a series size from them.

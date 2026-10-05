@@ -1,0 +1,828 @@
+{
+ "title": "USB gamepad",
+ "footer": "Example review, pcb-design-brief",
+ "overview": {
+  "heading": "USB gamepad – overview",
+  "text": "<b>Purpose:</b> a small USB gamepad for PC games: D-pad, A/B/X/Y, START, SELECT, three status LEDs, USB-C to the PC, recognised without a driver (HID). <b>Series:</b> 25 devices, hand soldered. <b>Budget:</b> 450 € for the series (fictional). <b>Cost:</b> ≈ 301 € for 25 devices (12.05 € each): parts 224 €, boards 62 €, PETG 16 €.",
+  "image": "build/3d/overview.png",
+  "boxes": "build/3d/overview.json",
+  "callouts": [
+   {
+    "group": "top",
+    "label": "top shell, PETG",
+    "target": "enclosure"
+   },
+   {
+    "group": "caps",
+    "label": "button caps, PETG",
+    "target": "enclosure"
+   },
+   {
+    "group": "inserts",
+    "label": "heat-set inserts M2.5",
+    "target": "enclosure-2"
+   },
+   {
+    "group": "board",
+    "label": "board, 86 × 40 mm",
+    "target": "stack"
+   },
+   {
+    "group": "base",
+    "label": "base shell, PETG",
+    "target": "enclosure"
+   },
+   {
+    "group": "screws",
+    "label": "screws M2.5 × 8",
+    "target": "enclosure-2"
+   },
+   {
+    "group": "cable",
+    "label": "USB-C cable (symbolic)",
+    "target": "instructions"
+   }
+  ],
+  "caption": "Exploded in assembly order: base, board, inserts and caps, top; screws from below."
+ },
+ "schematic": {
+  "pdf": "build/schematic.pdf"
+ },
+ "calculations": {
+  "text": "Worst case VBUS 5.25 V. Example values from typical datasheets; for a real build each one comes from the datasheet of the bought part (CI-1). Total dissipation ≈ 0.13 W: no thermal limit inside the case (rise < 1 K).",
+  "rows": [
+   {
+    "ref": "U1",
+    "function": "MCU supply",
+    "case": "VBUS 5.25 V max.",
+    "load": "5.25 V",
+    "limit": "operating 2.7–5.5 V",
+    "share": 0.95,
+    "allowed": 1.0,
+    "note": "inside the operating range"
+   },
+   {
+    "ref": "U1",
+    "function": "MCU current",
+    "case": "16 MHz, USB active",
+    "load": "≈ 15 mA",
+    "limit": "USB budget 50 mA declared",
+    "share": 0.3,
+    "allowed": 0.7,
+    "note": ""
+   },
+   {
+    "ref": "D2–D4",
+    "function": "status LEDs",
+    "case": "on",
+    "load": "3 mA each",
+    "limit": "20 mA",
+    "share": 0.15,
+    "allowed": 0.7,
+    "note": ""
+   },
+   {
+    "ref": "R5–R7",
+    "function": "LED resistors 1 k",
+    "case": "LED on",
+    "load": "9 mW",
+    "limit": "125 mW",
+    "share": 0.07,
+    "allowed": 0.5,
+    "note": ""
+   },
+   {
+    "ref": "R3",
+    "function": "reset pull-up 5.1 k",
+    "case": "button pressed",
+    "load": "4.9 mW",
+    "limit": "125 mW",
+    "share": 0.04,
+    "allowed": 0.5,
+    "note": ""
+   },
+   {
+    "ref": "R8, R9",
+    "function": "CC pull-downs 5.1 k",
+    "case": "host 5 V on CC",
+    "load": "≈ 0.2 mW",
+    "limit": "125 mW",
+    "share": 0.01,
+    "allowed": 0.5,
+    "note": "value set by USB-C"
+   },
+   {
+    "ref": "F1",
+    "function": "PTC 500 mA",
+    "case": "normal operation",
+    "load": "≈ 25 mA",
+    "limit": "hold 500 mA",
+    "share": 0.05,
+    "allowed": 0.7,
+    "note": "trips at a short"
+   },
+   {
+    "ref": "C3–C7",
+    "function": "1 µF X7R 25 V",
+    "case": "supply",
+    "load": "5.25 V",
+    "limit": "25 V",
+    "share": 0.21,
+    "allowed": 0.5,
+    "note": "5 µF in total, USB limit 10 µF"
+   },
+   {
+    "ref": "C1, C2",
+    "function": "22 pF C0G 50 V",
+    "case": "crystal",
+    "load": "≈ 5 V peak",
+    "limit": "50 V",
+    "share": 0.1,
+    "allowed": 0.5,
+    "note": "2 × (18 − 5) pF = 26 pF → 22 pF"
+   },
+   {
+    "ref": "J1",
+    "function": "USB-C receptacle",
+    "case": "device current",
+    "load": "≈ 25 mA",
+    "limit": "≥ 1.5 A per pin",
+    "share": 0.02,
+    "allowed": 0.7,
+    "note": ""
+   },
+   {
+    "ref": "SW1–SW11",
+    "function": "tactile switches",
+    "case": "pull-up current",
+    "load": "0.14 mA",
+    "limit": "50 mA",
+    "share": 0.01,
+    "allowed": 0.7,
+    "note": ""
+   }
+  ]
+ },
+ "board": {
+  "image": "build/3d/board.png",
+  "caption": "Rendered from the KiCad 3D export: 86 × 40 × 1.6 mm, 2 layers, ENIG. Hand-solder footprints, THT buttons and USB-C, decoupling, crystal and reset button on the bottom."
+ },
+ "stack": {
+  "image": "build/3d/stack.png",
+  "anchors": "build/3d/stack.json",
+  "dimensions": "86.0 × 40.0 × 1.6 mm",
+  "dimensions_note": "34.1 cm², bare ≈ 10 g (FR-4 1.85 g/cm³)",
+  "labels": {
+   "parts_top": [
+    "Parts, top",
+    "THT buttons, USB-C, SMD",
+    "soldered by hand",
+    "up to 4.3 mm"
+   ],
+   "silk_top": [
+    "Silkscreen, top",
+    "epoxy ink, white",
+    "not conductive",
+    "≈ 0.01–0.02 mm"
+   ],
+   "mask_top": [
+    "Solder mask, top",
+    "epoxy, green",
+    "pads and vias open",
+    "≈ 0.02 mm"
+   ],
+   "copper_top": [
+    "Copper, top",
+    "copper, ENIG where open",
+    "signals, pads",
+    "0.035 mm"
+   ],
+   "core": [
+    "Core",
+    "FR-4",
+    "plated holes join the layers",
+    "1.6 mm total"
+   ],
+   "copper_bottom": [
+    "Copper, bottom",
+    "copper, ENIG where open",
+    "ground pour, signals",
+    "0.035 mm"
+   ],
+   "mask_bottom": [
+    "Solder mask, bottom",
+    "epoxy, green",
+    "pads and vias open",
+    "≈ 0.02 mm"
+   ],
+   "silk_bottom": [
+    "Silkscreen, bottom",
+    "epoxy ink, white",
+    "title, test points, check",
+    "≈ 0.01–0.02 mm"
+   ],
+   "parts_bottom": [
+    "Parts, bottom",
+    "SMD",
+    "decoupling, crystal, reset",
+    "up to 1.9 mm"
+   ]
+  },
+  "caption": "Exploded view from above; every layer to scale, only the gaps are invented. The bottom side is shown as it lies in the product (seen from above). Each layer and label links to its detail."
+ },
+ "layers": [
+  {
+   "key": "parts_top",
+   "title": "Parts, top",
+   "text": "Buttons, USB-C receptacle, MCU, USB resistors and ESD, LEDs. Plan view of the 3D models at the scale of the layers below.",
+   "image": "build/layers/0-parts-top.png"
+  },
+  {
+   "key": "silk_top",
+   "title": "Silkscreen, top (F.SilkS)",
+   "text": "Every reference with its value or function next to its part; button names under the buttons.",
+   "image": "build/layers/1-silk-top.png"
+  },
+  {
+   "key": "mask_top",
+   "title": "Solder mask, top (F.Mask)",
+   "text": "Green = mask. Open at every pad and at the vias not under a part.",
+   "image": "build/layers/2-mask-top.png"
+  },
+  {
+   "key": "copper_top",
+   "title": "Copper, top (F.Cu)",
+   "text": "Signals 0.3 mm, supply 0.6 mm, clearance 0.2 mm (0.15 mm only between the USB-C pins).",
+   "image": "build/layers/3-copper-top.png"
+  },
+  {
+   "key": "core",
+   "title": "Core with holes",
+   "text": "FR-4 1.6 mm; THT buttons, USB-C pins and shield, vias, four M2.5 holes.",
+   "image": "build/layers/4-core.png"
+  },
+  {
+   "key": "copper_bottom",
+   "title": "Copper, bottom (B.Cu)",
+   "text": "Ground pour with the remaining signals; seen from above.",
+   "image": "build/layers/5-copper-bottom.png"
+  },
+  {
+   "key": "mask_bottom",
+   "title": "Solder mask, bottom (B.Mask)",
+   "text": "Open at the pads, test points and open vias.",
+   "image": "build/layers/6-mask-bottom.png"
+  },
+  {
+   "key": "silk_bottom",
+   "title": "Silkscreen, bottom (B.SilkS)",
+   "text": "Title, revision, the first check after soldering, test point names, references of the bottom parts. Left as stacked, right readable.",
+   "image": "build/layers/7-silk-bottom.png",
+   "readable": "build/layers/7-silk-bottom-readable.png"
+  }
+ ],
+ "parts": {
+  "suppliers": [
+   {
+    "name": "Distributor A",
+    "heading": "<b>Distributor A</b> (fictional): 8 of 13 distinct parts, shipping 4.95 € net.",
+    "rows": [
+     {
+      "ref": "U1",
+      "part": "ATmega32U4-AU (TQFP-44)",
+      "url": "https://example.com/atmega32u4-au-(tqfp-44)",
+      "data": "",
+      "order_no": "EX-85CDC",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "4.400"
+     },
+     {
+      "ref": "Y1",
+      "part": "Crystal 16 MHz 3225 18 pF",
+      "url": "https://example.com/crystal-16-mhz-3225-18-pf",
+      "data": "",
+      "order_no": "EX-39E73",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.350"
+     },
+     {
+      "ref": "D2 D3 D4",
+      "part": "LED 0805 green",
+      "url": "https://example.com/led-0805-green",
+      "data": "",
+      "order_no": "EX-BE2AA",
+      "qty": "75 → 75 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.060"
+     },
+     {
+      "ref": "F1",
+      "part": "PTC fuse 500 mA 1206",
+      "url": "https://example.com/ptc-fuse-500-ma-1206",
+      "data": "",
+      "order_no": "EX-382B5",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.140"
+     },
+     {
+      "ref": "SW1 SW2 SW3 SW4 SW5 SW6 SW7 SW8 SW9 SW10",
+      "part": "Tactile switch 6x6 THT",
+      "url": "https://example.com/tactile-switch-6x6-tht",
+      "data": "",
+      "order_no": "EX-C7C72",
+      "qty": "250 → 250 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.060"
+     },
+     {
+      "ref": "SW11",
+      "part": "Tactile switch SMD 4x4 (TL3342 type)",
+      "url": "https://example.com/tactile-switch-smd-4x4-(tl3342-type)",
+      "data": "",
+      "order_no": "EX-B20D8",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.300"
+     },
+     {
+      "ref": "J1",
+      "part": "USB-C receptacle USB 2.0 THT",
+      "url": "https://example.com/usb-c-receptacle-usb-2.0-tht",
+      "data": "",
+      "order_no": "EX-5E7CD",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.700"
+     },
+     {
+      "ref": "D1",
+      "part": "USBLC6-2SC6 (SOT-23-6)",
+      "url": "https://example.com/usblc6-2sc6-(sot-23-6)",
+      "data": "",
+      "order_no": "EX-5E98C",
+      "qty": "25 → 25 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.300"
+     }
+    ],
+    "missing": "",
+    "note": "Example data: supplier, links, order numbers and prices are invented."
+   },
+   {
+    "name": "Distributor B",
+    "heading": "<b>Distributor B</b> (fictional): 5 of 13 distinct parts, shipping 6.50 € net.",
+    "rows": [
+     {
+      "ref": "C3 C4 C5 C6 C7 C8",
+      "part": "C0805 1u X7R 25V",
+      "url": "https://example.com/c0805-1u-x7r-25v",
+      "data": "",
+      "order_no": "EX-D5223",
+      "qty": "125 → 200 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.006"
+     },
+     {
+      "ref": "C1 C2",
+      "part": "C0805 22p C0G 50V",
+      "url": "https://example.com/c0805-22p-c0g-50v",
+      "data": "",
+      "order_no": "EX-E5C6F",
+      "qty": "50 → 100 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.004"
+     },
+     {
+      "ref": "R5 R6 R7",
+      "part": "R0805 1k 1%",
+      "url": "https://example.com/r0805-1k-1%",
+      "data": "",
+      "order_no": "EX-A6087",
+      "qty": "75 → 100 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.003"
+     },
+     {
+      "ref": "R1 R2",
+      "part": "R0805 22R 1%",
+      "url": "https://example.com/r0805-22r-1%",
+      "data": "",
+      "order_no": "EX-7ADFC",
+      "qty": "50 → 100 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.003"
+     },
+     {
+      "ref": "R3 R4 R8 R9",
+      "part": "R0805 5k1 1%",
+      "url": "https://example.com/r0805-5k1-1%",
+      "data": "",
+      "order_no": "EX-F6101",
+      "qty": "100 → 100 / 10 000+",
+      "delivery": "2 working days",
+      "price": "0.003"
+     }
+    ],
+    "missing": "",
+    "note": "Example data: supplier, links, order numbers and prices are invented."
+   }
+  ],
+  "special": [
+   "<b>Mechanics</b> (fictional prices): 4 × M2.5 × 8 screws, 4 × heat-set inserts M2.5 × 4, PETG ≈ 31 g per device at full infill (≈ 15 g with 3 walls and 20 % infill)."
+  ]
+ },
+ "offers": {
+  "text": "Board 86 × 40 mm, 2 layers, FR-4 1.6 mm, 35 µm, ENIG, green mask, white silkscreen, 25 pieces. Example offers, names and prices fictional; landed totals include shipping and import costs to the delivery country.",
+  "pcb": [
+   {
+    "name": "Fab 1 (EU)",
+    "url": "https://example.com/fab-1",
+    "settings": "2 L, 1.6 mm, ENIG, green/white",
+    "qty": "25",
+    "total": "61.90 €",
+    "lead_time": "10 working days",
+    "notes": "cheapest; shipping included"
+   },
+   {
+    "name": "Fab 2 (overseas)",
+    "url": "https://example.com/fab-2",
+    "settings": "2 L, 1.6 mm, ENIG",
+    "qty": "25",
+    "total": "68.40 €",
+    "lead_time": "4 days + 8 days shipping",
+    "notes": "ENIG surcharge, import VAT"
+   },
+   {
+    "name": "Fab 3 (local express)",
+    "url": "https://example.com/fab-3",
+    "settings": "2 L, 1.6 mm, ENIG",
+    "qty": "25",
+    "total": "182.00 €",
+    "lead_time": "3 working days",
+    "notes": "only worth it when time matters"
+   }
+  ],
+  "assembly": [
+   {
+    "name": "Assembler 1 (overseas, turnkey)",
+    "url": "https://example.com/assembler-1",
+    "settings": "both sides, THT by hand at the assembler",
+    "qty": "25",
+    "total": "≈ 240 €",
+    "lead_time": "3 weeks",
+    "notes": "parts sourced by the assembler; two-sided adds a set-up fee"
+   },
+   {
+    "name": "Assembler 2 (EU)",
+    "url": "https://example.com/assembler-2",
+    "settings": "consigned parts",
+    "qty": "25",
+    "total": "≈ 410 €",
+    "lead_time": "2 weeks",
+    "notes": "parts from the distributor list"
+   }
+  ]
+ },
+ "design_to_cost": {
+  "text": "Every line of the BOM lists the parts that would meet the requirement; pcbtools cost prices each combination for the series and keeps the cheapest. Per-part fee 2.00 € for each distinct part (reel, feeder, sorting), placement 0.01 €. The board was then laid out with the optimised parts.",
+  "versions": [
+   [
+    "first version",
+    {
+     "total": 232.95,
+     "parts": 180.5,
+     "shipping": 11.45,
+     "fixed": 41.0,
+     "distinct": 16,
+     "placements": 36,
+     "area_mm2": 64.5,
+     "suppliers": [
+      "Distributor A",
+      "Distributor B"
+     ],
+     "missing": [],
+     "detail": {
+      "ATmega32U4-AU (TQFP-44)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 110.0,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Crystal 16 MHz 3225 18 pF": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 8.75,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "C0805 22p C0G 50V": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.4,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "C0805 100n X7R 50V": {
+       "qty": 100,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "C0805 1u X7R 25V": {
+       "qty": 25,
+       "bought": 100,
+       "cost": 0.6,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "C1206 10u X7R 16V": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 3.75,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "R0805 22R 1%": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 10k 1%": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 5k1 1%": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 1k 1%": {
+       "qty": 75,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "USBLC6-2SC6 (SOT-23-6)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 7.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "PTC fuse 500 mA 1206": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 3.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "LED 0805 green": {
+       "qty": 75,
+       "bought": 75,
+       "cost": 4.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "USB-C receptacle USB 2.0 THT": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 17.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Tactile switch 6x6 THT": {
+       "qty": 250,
+       "bought": 250,
+       "cost": 15.0,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Tactile switch SMD 4x4 (TL3342 type)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 7.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      }
+     }
+    }
+   ],
+   [
+    "optimised, built",
+    {
+     "total": 222.95,
+     "parts": 176.75,
+     "shipping": 11.45,
+     "fixed": 34.75,
+     "distinct": 13,
+     "placements": 35,
+     "area_mm2": 54.9,
+     "suppliers": [
+      "Distributor A",
+      "Distributor B"
+     ],
+     "missing": [],
+     "detail": {
+      "ATmega32U4-AU (TQFP-44)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 110.0,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Crystal 16 MHz 3225 18 pF": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 8.75,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "C0805 22p C0G 50V": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.4,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "C0805 1u X7R 25V": {
+       "qty": 125,
+       "bought": 200,
+       "cost": 1.2,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 22R 1%": {
+       "qty": 50,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 5k1 1%": {
+       "qty": 100,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "R0805 1k 1%": {
+       "qty": 75,
+       "bought": 100,
+       "cost": 0.3,
+       "supplier": "Distributor B",
+       "mpn": null
+      },
+      "USBLC6-2SC6 (SOT-23-6)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 7.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "PTC fuse 500 mA 1206": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 3.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "LED 0805 green": {
+       "qty": 75,
+       "bought": 75,
+       "cost": 4.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "USB-C receptacle USB 2.0 THT": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 17.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Tactile switch 6x6 THT": {
+       "qty": 250,
+       "bought": 250,
+       "cost": 15.0,
+       "supplier": "Distributor A",
+       "mpn": null
+      },
+      "Tactile switch SMD 4x4 (TL3342 type)": {
+       "qty": 25,
+       "bought": 25,
+       "cost": 7.5,
+       "supplier": "Distributor A",
+       "mpn": null
+      }
+     }
+    }
+   ]
+  ],
+  "changes": [
+   {
+    "refs": [
+     "C3",
+     "C4",
+     "C5",
+     "C6",
+     "C7",
+     "C8"
+    ],
+    "function": "supply decoupling, UCAP, bulk",
+    "from": "4 x 100 nF + 1 uF (UCAP) + 10 uF bulk",
+    "to": "5 x 1 uF, no bulk capacitor",
+    "why": "1 uF at each supply pin decouples as well as 100 nF for a 16 MHz MCU; 5 uF in total stays below the 10 uF a USB device may present; UCAP needs 1 uF anyway"
+   },
+   {
+    "refs": [
+     "R3",
+     "R4"
+    ],
+    "function": "reset pull-up, HWB pull-down",
+    "from": "R0805 10k 1%",
+    "to": "R0805 5k1 1%",
+    "why": "same value as the CC resistors; reset pull-up and HWB pull-down only need to be well below the 50 k internal resistors"
+   }
+  ]
+ },
+ "enclosure": {
+  "drawing": "build/tech-drawing.png",
+  "left": [
+   "<b>Size:</b> 93.2 × 47.2 × 13.5 mm; base 2 mm floor, 2 mm walls; the top's lip (1.2 mm) locates it inside the base walls. Board clamped between the base bosses and the top bosses.",
+   "<b>Screws and inserts:</b> 4 × M2.5 × 8 from below into heat-set inserts M2.5 × 4 in the top bosses; 3 mm of thread in the insert. Load: a dropped gamepad (≈ 60 g, 1 m onto a hard floor) stays far below the pull-out force of M2.5 inserts in PETG; hand-tight only.",
+   "<b>Caps:</b> ten printed caps with a retaining flange under the top plate; the plunger of each tactile switch carries its cap, 1.5 mm proud of the surface.",
+   "<b>Material:</b> PETG (impact resistant, 70 °C service temperature), ≈ 15 g per device with 20 % infill; ≈ 0.62 € at 25 €/kg (fictional)."
+  ],
+  "right": [
+   "<b>Heat:</b> ≈ 0.13 W in a 93 × 47 × 14 mm case: temperature rise below 1 K; no vents needed.",
+   "<b>Radio:</b> none on the board. USB-C shield to GND.",
+   "<b>Openings:</b> USB-C 12.4 × 7 mm for the cable's overmould, three Ø 1.8 mm LED windows, a Ø 1.6 mm hole in the base for the reset button (paper clip)."
+  ]
+ },
+ "printability": {
+  "report": "build/printability/report.json",
+  "caption": "Base printed floor down, top printed plate down, caps flange down; 0.2 mm layers, 0.4 mm nozzle. The screw seats print as a bridge over a 0.2 mm membrane."
+ },
+ "assembly": {
+  "views": "build/assembly/views.png",
+  "report": "build/assembly/report.json",
+  "text": [
+   "<b>Order:</b> 1. solder the board (bottom side first), 2. press the inserts into the top bosses, 3. caps into the top, 4. board onto the caps, 5. base over it, 6. four screws from below, hand-tight."
+  ]
+ },
+ "firmware": {
+  "prompt": "firmware-prompt.md",
+  "flashing": "flashing.md"
+ },
+ "instructions": [
+  {
+   "title": "Found impossible",
+   "items": [
+    "Nothing."
+   ]
+  },
+  {
+   "title": "Open items (need the physical world)",
+   "items": [
+    "First prototype: check that every cap moves freely and the case closes flush.",
+    "Firmware: confirm that the reset button starts the DFU bootloader (HWBE fuse)."
+   ]
+  },
+  {
+   "title": "Where to order",
+   "items": [
+    "Parts: the two distributor tables (fictional), one order each.",
+    "PCB: Fab 1, settings below. Assembly: by hand; see the offers page for the make-or-buy comparison."
+   ]
+  },
+  {
+   "title": "PCB order settings",
+   "items": [
+    "2 layers, FR-4, 1.6 mm, 35 µm copper, ENIG, green solder mask, white silkscreen; min. track 0.2 mm, clearance 0.15 mm (USB-C pins only), min. drill 0.45 mm; quantity 25.",
+    "Upload the Gerber/drill zip or the .kicad_pcb."
+   ]
+  },
+  {
+   "title": "Deviations from the brief",
+   "items": [
+    "HS-2: TQFP-44 with 0.8 mm pitch and a USB-C receptacle with 0.85 mm pin pitch; no hand-friendlier MCU with native USB exists in a larger package.",
+    "HS-4: clearance 0.2 mm (0.15 mm inside the USB-C footprint) instead of 0.5 mm; the TQFP pads force it.",
+    "LB-1/LB-2: the board has no room next to the part for the value of C2, D1, D2, D3, F1, R3, R4, R7, U1; it is in the assembly drawing. R2, R9: reference only in the assembly drawing.",
+    "JF-6: no spare solder fields; series product, the bottom is a ground pour."
+   ]
+  }
+ ]
+}

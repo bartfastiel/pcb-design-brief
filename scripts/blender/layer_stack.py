@@ -65,6 +65,44 @@ def split_by_face_height(obj, low, high):
     return parts[0] if parts else None
 
 
+def split_sides(obj, thickness):
+    """KiCad's GLB merges every part model of one material into one object, so the object is split into its loose
+    pieces: a piece reaching into the upper half of the board, or shaped like a through-hole leg (taller than wide, or
+    thin and reaching deep below), belongs to the top; the rest to the bottom."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.separate(type="LOOSE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    top, bottom = [], []
+    for piece in bpy.context.selected_objects:
+        lo, hi = bounds(piece)
+        size = [hi[k] - lo[k] for k in range(3)]
+        thin = max(size[0], size[1]) < thickness
+        through_hole_leg = size[2] > max(size[0], size[1]) or (thin and lo[2] < -1.4 * thickness) \
+            or max(size) < 0.45 * thickness
+        (top if hi[2] > thickness * 0.5 or through_hole_leg else bottom).append(piece)
+    return top, bottom
+
+
+def reunite_legs(top, bottom, thickness):
+    """Loose pieces of a through-hole leg below the board go back to the top when they lie in the footprint of a top
+    piece that already reaches below the board."""
+    margin = 0.3 * thickness
+    legs = [bounds(o) for o in top if bounds(o)[0][2] < 0]
+    keep = []
+    for piece in bottom:
+        lo, hi = bounds(piece)
+        cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
+        if any(l[0] - margin <= cx <= h[0] + margin and l[1] - margin <= cy <= h[1] + margin for l, h in legs):
+            top.append(piece)
+        else:
+            keep.append(piece)
+    return top, keep
+
+
 def classify(objects, thickness):
     groups = {name: [] for name in ORDER}
     flat, copper = [], []
@@ -79,7 +117,10 @@ def classify(objects, thickness):
         elif lo[2] < 0.01 * thickness and hi[2] > 0.99 * thickness and hi[2] < thickness * 1.2 and lo[2] > -0.2 * thickness:
             copper.append(obj)
         else:
-            groups["parts_top" if (lo[2] + hi[2]) / 2 > thickness / 2 else "parts_bottom"].append(obj)
+            top, bottom = split_sides(obj, thickness)
+            groups["parts_top"] += top
+            groups["parts_bottom"] += bottom
+    groups["parts_top"], groups["parts_bottom"] = reunite_legs(groups["parts_top"], groups["parts_bottom"], thickness)
     groups["core"].append(body)
     flat.sort(key=lambda o: bounds(o)[0][2])
     top = [o for o in flat if bounds(o)[0][2] > thickness / 2]
@@ -140,12 +181,15 @@ def explode(groups, gap, core_scale, thickness):
         offsets[name] = (core_i - i) * gap
     for name, objs in groups.items():
         for obj in objs:
+            bpy.context.view_layer.update()
             if name == "core":
                 obj.scale.z *= core_scale
                 obj.location.z = obj.location.z * core_scale - thickness * (core_scale - 1) / 2
             extra = (core_scale - 1) * thickness / 2
             shift = offsets[name] + (extra if offsets[name] > 0 else -extra if offsets[name] < 0 else 0)
-            obj.location.z += shift
+            moved = obj.matrix_world.copy()
+            moved.translation.z += shift
+            obj.matrix_world = moved
     bpy.context.view_layer.update()
     return names
 
@@ -231,6 +275,8 @@ def main():
     meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
     for obj in meshes:
         obj.matrix_world = obj.matrix_world.copy()
+        if obj.data.users > 1:
+            obj.data = obj.data.copy()
     def footprint_area(obj):
         lo, hi = bounds(obj)
         return (hi[0] - lo[0]) * (hi[1] - lo[1]) if lo[2] > -1e-5 and hi[2] - lo[2] > 1e-4 else 0

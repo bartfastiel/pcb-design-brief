@@ -15,22 +15,25 @@ and how to report where it deviated. The aim is a design that needs hardly any f
 | [BRIEF.md](BRIEF.md) | the brief itself (English, normative) |
 | [templates/intake.md](templates/intake.md) | the intake questions, project overrides and open assumptions; copy into the project |
 | [skills/pcb-design-brief/SKILL.md](skills/pcb-design-brief/SKILL.md) | entry point for agents that load skills (e.g. Claude Code) |
-| [scripts/](scripts/) | KiCad and review helpers, see below |
+| [docs/sourcing-apis.md](docs/sourcing-apis.md) | distributor, aggregator, fab and CAD-data APIs for prices, stock and specs |
+| [pcbtools/](pcbtools/), [scripts/](scripts/) | the tools, see below |
+| [docs/automation.md](docs/automation.md) | which steps need the agent, which a tool does |
 
-The brief in one breath: ask once, then work alone; function and safety first; nothing lost,
-everything traceable; verified data only; derate generously; big exposed pads and open vias for
-the soldering iron; spare solder fields in free copper on prototypes; zero ERC/DRC warnings; a
-virtual enclosure assembly with zero intersections; a review PDF from the exploded product
-render down to per-supplier parts lists and the fab order settings.
+The brief in one breath: ask once, then work alone; function, robustness and cost first, then perfect
+labelling; verified data only; prices and specs from APIs during the design, not after it; big exposed pads and
+open vias for the soldering iron; zero ERC/DRC warnings; an enclosure that provably fits and prints; a review PDF
+from the exploded product render down to per-supplier parts lists, fab and assembly offers and a firmware prompt.
 
 ## Example
 
-[examples/led-dimmer](examples/led-dimmer/) walks through a small 5 V LED-strip dimmer: the filled intake, the
-commands an agent runs, the results and the closing deviation report.
+[examples/usb-gamepad](examples/usb-gamepad/) is a complete small product built along the brief: a USB-C gamepad
+(ATmega32U4, ten buttons, three LEDs) on a hand-soldered 86 × 40 mm board in a printed case. One `build.sh` turns
+its design data into schematic, routed board, enclosure, checks, design-to-cost result, renders and the
+**[review PDF](examples/usb-gamepad/usb-gamepad-review.pdf)**.
 
-| Assembled board | Layer stack, to scale |
+| Product, exploded | Layer stack, to scale |
 |---|---|
-| <img src="examples/led-dimmer/images/board.png" alt="Rendered example board" width="420"> | <img src="examples/led-dimmer/images/layer-stack.png" alt="Exploded layer stack" width="260"> |
+| <img src="examples/usb-gamepad/images/overview.png" alt="Exploded gamepad" width="440"> | <img src="examples/usb-gamepad/images/layer-stack.png" alt="Layer stack" width="200"> |
 
 ## Using it with an agent
 
@@ -46,26 +49,40 @@ Pick one:
 Then start with: *"Design the board for … following the PCB design brief."* The agent fills
 `intake.md`, asks the open questions in one batch and continues on its own.
 
-## Scripts
+## Tools
 
-Install the Python packages with `pip install -r requirements.txt`. All scripts are standalone, take paths as arguments and write nothing outside the given output
-directory. KiCad scripts need the Python that ships with KiCad (it contains `pcbnew`), e.g.
-`"C:\Program Files\KiCad\9.0\bin\python.exe"` on Windows or `/usr/lib/kicad/bin/python3` style
-paths elsewhere.
+The agent should spend tokens on judgement, not on clicking: it writes the design as data, and `pcbtools` does the
+deterministic rest. [docs/automation.md](docs/automation.md) splits the workflow step by step into "agent" and "tool".
 
-| Script | Rule | What it does |
+```
+pip install -r requirements.txt
+python -m pcbtools doctor                      # finds KiCad, its Python, Freerouting, Java/Docker, Blender
+python -m pcbtools init my-board               # intake.md, design.json, bom-options.json
+python -m pcbtools schematic my-board/design.json
+python -m pcbtools board my-board/design.json  # place, route, pour, label, untent, ERC/DRC
+```
+
+| Command | Rule | What it does |
 |---|---|---|
-| [scripts/kicad/check.py](scripts/kicad/check.py) | §4 gates | ERC, DRC with parity, fails on any warning, prints a summary (`--pcb-only` without schematic) |
-| [scripts/kicad/untent_vias.py](scripts/kicad/untent_vias.py) | HS-5 | removes solder mask from every via on both sides |
-| [scripts/kicad/joker_fields.py](scripts/kicad/joker_fields.py) | JF-1 … JF-5 | computes spare solder fields in the free copper and adds them as one board-only footprint |
-| [scripts/review/layer_images.py](scripts/review/layer_images.py) | §12.5 | one presence-coloured PNG per board layer from `kicad-cli` SVG exports |
-| [scripts/review/assembly_check.py](scripts/review/assembly_check.py) | AC-2, AC-4 | pairwise intersection volumes and six orthographic views with inward faces in signal red |
-| [scripts/review/printability.py](scripts/review/printability.py) | FDM-2 … FDM-8 | overhangs, bridge spans, floating islands, features below 2 × nozzle in any layer, bed contact; PASS/FAIL with coordinates and a coloured picture per part |
-| [scripts/review/tech_drawing.py](scripts/review/tech_drawing.py) | §12.7 | technical drawing sheet (three views plus isometric, main dimensions) from STL files |
-| [scripts/blender/layer_stack.py](scripts/blender/layer_stack.py) | §12.4 | photo-realistic exploded layer stack from a KiCad GLB export, with label anchors and link boxes as JSON |
-| [scripts/blender/exploded_scene.py](scripts/blender/exploded_scene.py) | §12.1, §12.3 | studio render of a JSON scene (STL, GLB, simple boxes, cables), screen boxes per part as JSON for PDF links |
+| `doctor` | §3 | every external program and Python package: found where, or how to get it |
+| `init` | IN | project skeleton with a minimal circuit that passes ERC |
+| `schematic` | §6 | KiCad schematic from `design.json`: library symbols, labelled pin stubs, no-connects, notes; ERC |
+| `board` (`place`, `route`, `finish`) | §4, §5, §5a | outline, footprints, net classes, rules, keepouts, pre-routes, fan-out vias, Freerouting with retries, pours with stitching, labels next to their parts, untented vias, DRC with parity |
+| `check` | §4 gates | ERC, DRC with schematic parity; non-zero exit on any finding |
+| `calc` | CI-1, CI-2 | LED resistors, dividers, crystal load capacitors, IPC-2221 track width, enclosure temperature |
+| `parts search` / `offers` / `compare` / `fill` | SO-0, §6a | distributor APIs (keys from the environment): parametric search, offers with packaging and price breaks, cached; part × supplier table |
+| `cost` | §6a | design to cost: cheapest consistent BOM for the series, with per-part fees and shipping |
+| `render` | §12.1, §12.4 | Blender: exploded product scene or to-scale layer stack, transparent background |
+| `layer_images` | §12.5 | one presence-coloured PNG per board layer |
+| `assembly_check` | AC-2, AC-4 | pairwise intersection volumes, six views with inward faces in red |
+| `printability` | FDM-2 … FDM-8 | overhangs, bridges, islands, thin features, bed contact; PASS/FAIL with a picture per part |
+| `tech_drawing` | §12.7 | three views plus isometric with main dimensions |
+| `review_pdf` | §12 | the review PDF from `review.json` |
+| `joker_fields`, `untent_vias`, `autoroute` | JF, HS-5, §4 | the single board helpers, also usable on hand-made boards |
 
-Python scripts print `--help`; the Blender scripts take their arguments after `--` (`blender -b --python script.py -- …`) and document them in their docstring. Tested with KiCad 10 and Blender 4.5.
+`design.json` is documented at the top of [pcbtools/design.py](pcbtools/design.py); the gamepad's
+[design.json](examples/usb-gamepad/design.json) is a full example. Steps that need `pcbnew` re-run themselves under
+KiCad's Python, so one `python` is enough.
 
 ## Questions this brief answers on purpose
 

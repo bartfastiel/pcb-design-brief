@@ -1,0 +1,613 @@
+{
+ "series": 25,
+ "note": "Suppliers and prices are fictional, for the example only.",
+ "costs": {
+  "unique_part": 2.0,
+  "placement": 0.01,
+  "shipping": {
+   "Distributor A": 4.95,
+   "Distributor B": 6.5
+  }
+ },
+ "lines": [
+  {
+   "refs": [
+    "U1"
+   ],
+   "function": "MCU with native USB",
+   "options": [
+    {
+     "part": "ATmega32U4-AU (TQFP-44)"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "Y1"
+   ],
+   "function": "16 MHz clock",
+   "options": [
+    {
+     "part": "Crystal 16 MHz 3225 18 pF"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "C1",
+    "C2"
+   ],
+   "function": "crystal load",
+   "options": [
+    {
+     "part": "C0805 22p C0G 50V"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8"
+   ],
+   "function": "supply decoupling, UCAP, bulk",
+   "options": [
+    {
+     "name": "4 x 100 nF + 1 uF (UCAP) + 10 uF bulk",
+     "parts": [
+      [
+       "C0805 100n X7R 50V",
+       4
+      ],
+      [
+       "C0805 1u X7R 25V",
+       1
+      ],
+      [
+       "C1206 10u X7R 16V",
+       1
+      ]
+     ]
+    },
+    {
+     "name": "5 x 1 uF, no bulk capacitor",
+     "parts": [
+      [
+       "C0805 1u X7R 25V",
+       5
+      ]
+     ],
+     "note": "1 uF at each supply pin decouples as well as 100 nF for a 16 MHz MCU; 5 uF in total stays below the 10 uF a USB device may present; UCAP needs 1 uF anyway"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "R1",
+    "R2"
+   ],
+   "function": "USB series resistors (datasheet value)",
+   "options": [
+    {
+     "part": "R0805 22R 1%"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "R3",
+    "R4"
+   ],
+   "function": "reset pull-up, HWB pull-down",
+   "options": [
+    {
+     "part": "R0805 10k 1%"
+    },
+    {
+     "part": "R0805 5k1 1%",
+     "note": "same value as the CC resistors; reset pull-up and HWB pull-down only need to be well below the 50 k internal resistors"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "R8",
+    "R9"
+   ],
+   "function": "USB-C CC pull-downs (spec value)",
+   "options": [
+    {
+     "part": "R0805 5k1 1%"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "R5",
+    "R6",
+    "R7"
+   ],
+   "function": "LED resistors, 3 mA",
+   "options": [
+    {
+     "part": "R0805 1k 1%"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "D1"
+   ],
+   "function": "ESD on D+/D-",
+   "options": [
+    {
+     "part": "USBLC6-2SC6 (SOT-23-6)"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "F1"
+   ],
+   "function": "short-circuit limit",
+   "options": [
+    {
+     "part": "PTC fuse 500 mA 1206"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "D2",
+    "D3",
+    "D4"
+   ],
+   "function": "status LEDs",
+   "options": [
+    {
+     "part": "LED 0805 green"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "J1"
+   ],
+   "function": "USB-C receptacle",
+   "options": [
+    {
+     "part": "USB-C receptacle USB 2.0 THT"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "SW1",
+    "SW2",
+    "SW3",
+    "SW4",
+    "SW5",
+    "SW6",
+    "SW7",
+    "SW8",
+    "SW9",
+    "SW10"
+   ],
+   "function": "buttons",
+   "options": [
+    {
+     "part": "Tactile switch 6x6 THT"
+    }
+   ]
+  },
+  {
+   "refs": [
+    "SW11"
+   ],
+   "function": "reset / bootloader",
+   "options": [
+    {
+     "part": "Tactile switch SMD 4x4 (TL3342 type)"
+    }
+   ]
+  }
+ ],
+ "offers": {
+  "ATmega32U4-AU (TQFP-44)": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      5.1
+     ],
+     [
+      25,
+      4.4
+     ]
+    ]
+   }
+  ],
+  "Crystal 16 MHz 3225 18 pF": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.45
+     ],
+     [
+      10,
+      0.35
+     ],
+     [
+      100,
+      0.22
+     ]
+    ]
+   }
+  ],
+  "C0805 22p C0G 50V": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.07
+     ],
+     [
+      10,
+      0.03
+     ],
+     [
+      100,
+      0.01
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.004
+     ]
+    ]
+   }
+  ],
+  "C0805 100n X7R 50V": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.06
+     ],
+     [
+      10,
+      0.025
+     ],
+     [
+      100,
+      0.007
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.003
+     ]
+    ]
+   }
+  ],
+  "C0805 1u X7R 25V": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.08
+     ],
+     [
+      10,
+      0.035
+     ],
+     [
+      100,
+      0.012
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.006
+     ]
+    ]
+   }
+  ],
+  "C1206 10u X7R 16V": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.25
+     ],
+     [
+      10,
+      0.15
+     ],
+     [
+      100,
+      0.08
+     ]
+    ]
+   }
+  ],
+  "R0805 22R 1%": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.08
+     ],
+     [
+      10,
+      0.03
+     ],
+     [
+      100,
+      0.008
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.003
+     ]
+    ]
+   }
+  ],
+  "R0805 1k 1%": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.08
+     ],
+     [
+      10,
+      0.03
+     ],
+     [
+      100,
+      0.008
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.003
+     ]
+    ]
+   }
+  ],
+  "R0805 5k1 1%": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.08
+     ],
+     [
+      10,
+      0.03
+     ],
+     [
+      100,
+      0.008
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.003
+     ]
+    ]
+   }
+  ],
+  "R0805 10k 1%": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.08
+     ],
+     [
+      10,
+      0.03
+     ],
+     [
+      100,
+      0.008
+     ]
+    ]
+   },
+   {
+    "supplier": "Distributor B",
+    "pack": 100,
+    "breaks": [
+     [
+      100,
+      0.003
+     ]
+    ]
+   }
+  ],
+  "USBLC6-2SC6 (SOT-23-6)": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.38
+     ],
+     [
+      10,
+      0.3
+     ],
+     [
+      100,
+      0.18
+     ]
+    ]
+   }
+  ],
+  "PTC fuse 500 mA 1206": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.2
+     ],
+     [
+      10,
+      0.14
+     ],
+     [
+      100,
+      0.07
+     ]
+    ]
+   }
+  ],
+  "LED 0805 green": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.12
+     ],
+     [
+      10,
+      0.06
+     ],
+     [
+      100,
+      0.03
+     ]
+    ]
+   }
+  ],
+  "USB-C receptacle USB 2.0 THT": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.85
+     ],
+     [
+      10,
+      0.7
+     ],
+     [
+      100,
+      0.55
+     ]
+    ]
+   }
+  ],
+  "Tactile switch 6x6 THT": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.15
+     ],
+     [
+      10,
+      0.1
+     ],
+     [
+      100,
+      0.06
+     ]
+    ]
+   }
+  ],
+  "Tactile switch SMD 4x4 (TL3342 type)": [
+   {
+    "supplier": "Distributor A",
+    "pack": 1,
+    "breaks": [
+     [
+      1,
+      0.4
+     ],
+     [
+      10,
+      0.3
+     ],
+     [
+      100,
+      0.2
+     ]
+    ]
+   }
+  ]
+ },
+ "area_mm2": {
+  "C0805 100n X7R 50V": 6.1,
+  "C0805 1u X7R 25V": 6.1,
+  "C1206 10u X7R 16V": 9.6,
+  "R0805 10k 1%": 6.1,
+  "R0805 5k1 1%": 6.1
+ }
+}

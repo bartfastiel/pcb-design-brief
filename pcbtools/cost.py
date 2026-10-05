@@ -1,14 +1,14 @@
 """Design-to-cost search over a BOM (brief §6a): every line lists the parts that would do the job, the script picks
 the combination with the lowest cost for the series and reports the step from the first choice.
 
-  python bom_cost.py bom.json [--series 25] [--nexar] [-o result.json]
+  python -m pcbtools cost bom.json [--series 25] [--live] [-o result.json]
 
 bom.json
   {"series": 25,
    "costs": {"unique_part": 1.50, "placement": 0.02, "shipping": {"Distributor A": 4.95}},
    "lines": [{"refs": ["R1", "R2"], "function": "USB series resistor",
               "options": [{"part": "R0805 22R"}, {"name": "2 x 47R parallel", "parts": [["R0805 47R", 4]]}]}],
-   "area_mm2": {"R0805 22R": 6.1},  "mpn": {"R0805 22R": "<manufacturer part number for --nexar>"},
+   "area_mm2": {"R0805 22R": 6.1},  "mpn": {"R0805 22R": "<manufacturer part number for --live>"},
    "offers": {"R0805 22R": [{"supplier": "Distributor A", "mpn": "...", "pack": 1,
                              "breaks": [[1, 0.05], [100, 0.012]], "stock": 5000}]}}
 
@@ -18,18 +18,14 @@ the same part consolidate: one distinct part instead of two, one line fee and on
 meet the requirement; the script compares cost, it does not check the circuit. Costs: parts at the series quantity with packaging units and price breaks, a fee per distinct part
 (reel set-up, feeder, picking), a fee per placement, and shipping for every supplier used.
 
---nexar fills "offers" for options that carry an "mpn" from the Nexar API (needs NEXAR_CLIENT_ID and
-NEXAR_CLIENT_SECRET); without it the offers in the file are used as they are."""
+--live fills "offers" for parts that carry an "mpn" from every distributor API with keys in the environment
+(pcbtools parts, cached in offers.json next to the BOM); without it the offers in the file are used as they are."""
 import argparse
 import itertools
 import json
 import math
 import os
-import urllib.parse
-import urllib.request
 
-NEXAR_TOKEN = "https://identity.nexar.com/connect/token"
-NEXAR_API = "https://api.nexar.com/graphql"
 NEXAR_QUERY = """query ($mpn: String!) { supSearchMpn(q: $mpn, limit: 3) { results { part { mpn sellers {
   company { name } offers { packaging moq inventoryLevel prices { quantity price currency } } } } } } }"""
 
@@ -114,48 +110,19 @@ def search(bom, series):
     return choice
 
 
-def nexar_token():
-    data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": os.environ["NEXAR_CLIENT_ID"],
-                                   "client_secret": os.environ["NEXAR_CLIENT_SECRET"]}).encode()
-    with urllib.request.urlopen(urllib.request.Request(NEXAR_TOKEN, data=data)) as response:
-        return json.load(response)["access_token"]
-
-
-def nexar_offers(token, mpn, currency="EUR"):
-    body = json.dumps({"query": NEXAR_QUERY, "variables": {"mpn": mpn}}).encode()
-    request = urllib.request.Request(NEXAR_API, data=body, headers={"Authorization": f"Bearer {token}",
-                                                                    "Content-Type": "application/json"})
-    with urllib.request.urlopen(request) as response:
-        results = json.load(response)["data"]["supSearchMpn"]["results"] or []
-    offers = []
-    for result in results[:1]:
-        for seller in result["part"]["sellers"]:
-            for offer in seller["offers"]:
-                breaks = [[p["quantity"], p["price"]] for p in offer["prices"] if p["currency"] == currency]
-                if breaks:
-                    offers.append({"supplier": seller["company"]["name"], "mpn": result["part"]["mpn"],
-                                   "moq": offer.get("moq"), "stock": offer.get("inventoryLevel"), "breaks": breaks,
-                                   "packaging": offer.get("packaging")})
-    return offers
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="pcbtools cost", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("bom")
     parser.add_argument("--series", type=int)
-    parser.add_argument("--nexar", action="store_true")
+    parser.add_argument("--live", action="store_true")
     parser.add_argument("-o", "--output")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     bom = json.load(open(args.bom, encoding="utf-8"))
     series = args.series or bom.get("series", 1)
-    if args.nexar:
-        token = nexar_token()
-        for line in bom["lines"]:
-            for option in line["options"]:
-                for part, _ in parts_of(line, option):
-                    mpn = bom.get("mpn", {}).get(part)
-                    if mpn:
-                        bom["offers"][part] = nexar_offers(token, mpn)
+    if args.live:
+        from .parts import fill
+        fill(args.bom, os.path.join(os.path.dirname(os.path.abspath(args.bom)), "offers.json"))
+        bom = json.load(open(args.bom, encoding="utf-8"))
     first = [0] * len(bom["lines"])
     best = search(bom, series)
     before, after = evaluate(bom, first, series), evaluate(bom, best, series)

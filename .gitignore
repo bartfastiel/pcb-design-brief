@@ -4,3 +4,6 @@ out/
 *-backups/
 *.kicad_prl
 fp-info-cache
+build/
+build.log
+offers.json
