@@ -4,7 +4,7 @@ Input is a GLB from
   kicad-cli pcb export glb --include-tracks --include-pads --include-silkscreen --include-soldermask board.kicad_pcb
 Run:
   blender -b --python layer_stack.py -- board.glb out.png [--gap 14] [--core-scale 1] [--light 0.05] [--background 0.94] [--size 1800x1500] [--samples 96]
-Writes out.png and out.json: per layer its name, the screen point for a label leader (rightmost point of the layer)
+Writes out.png (transparent background) and out.json: per layer its name, the screen point for a label leader (rightmost point of the layer)
 and the screen bounding box, in pixels, so labels and PDF links can be added afterwards. Empty layers are left out."""
 import json
 import math
@@ -252,6 +252,7 @@ def main():
     scene.cycles.samples = opts["samples"]
     scene.cycles.use_denoising = True
     scene.view_settings.view_transform = "Standard"
+    scene.render.film_transparent = True
     scene.render.filepath = os.path.abspath(opts["png"])
     bpy.ops.render.render(write_still=True)
     info = {"order": names, "layers": {name: screen_info(cam, groups[name]) for name in names},

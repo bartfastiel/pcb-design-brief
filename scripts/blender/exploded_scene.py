@@ -11,6 +11,7 @@ scene.json (lengths in mm):
      {"name": "psu", "box": [[-80, -10, 20], [-35, 38, 60]], "bevel": 4, "material": {...}},
      {"name": "cable", "curve": [[160, 14, 42], [200, 14, 42], [230, 30, 10]], "radius": 2, "material": {...}}]}
 camera "ortho": [x, y, width] renders a parallel view of that width centred on (x, y), e.g. elevation 90 for a plan; "roll" turns the image about the view axis in degrees.
+Background is transparent unless "transparent": false.
 Material keys: color (linear RGB), metallic, roughness, alpha, transmission. Parts with the same name form one group.
 Writes out.png and out.json with the screen bounding box of every group in pixels (for PDF links and callouts)."""
 import json
@@ -216,7 +217,7 @@ def main():
     scene.cycles.samples = spec.get("samples", 128)
     scene.cycles.use_denoising = True
     scene.view_settings.view_transform = "Standard"
-    scene.render.film_transparent = spec.get("transparent", False)
+    scene.render.film_transparent = spec.get("transparent", True)
     scene.render.filepath = png
     bpy.ops.render.render(write_still=True)
 

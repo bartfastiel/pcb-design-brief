@@ -46,6 +46,7 @@ def main():
     parser.add_argument("--keep", help="directory for the JSON reports")
     parser.add_argument("--pcb-only", action="store_true", help="no schematic: DRC without parity, no ERC")
     args = parser.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     stem = os.path.splitext(args.project)[0]
     cli = find_cli(args.kicad_cli)

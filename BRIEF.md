@@ -28,17 +28,21 @@ Anything unknown that blocks nothing becomes a named, flagged assumption, not a 
 ## 2 Principles, in priority order
 
 1. **Function and safety first.** Radio, heat and ratings come before compactness or looks.
-2. **Nothing is lost.** No data, no work state, no board area. Free area becomes spare solder
-   fields (§7) or labelling. Every state is in git.
-3. **Everything is traceable.** Source files, calculations, origin of every number, and a review
+2. **Robust, not at the limit.** Generous derating, noise margins, tolerant of operator errors,
+   low emissions.
+3. **Cheap and small.** Keep the board as small as function, hand soldering and the enclosure allow:
+   area is cost and weight. Question every size and every expensive part.
+4. **Perfect labelling.** Whoever holds the board knows every part, connector pin and test point
+   without a drawing (§5a). Labelling outranks spare solder fields.
+5. **Nothing is lost.** No data, no work state, no board area. Area left after labelling becomes spare
+   solder fields (§7). Every state is in git.
+6. **Everything is traceable.** Source files, calculations, origin of every number, and a review
    PDF (§12) that explains each decision.
-4. **Verified data only.** Dimensions, footprints, ratings and prices come from datasheets,
+7. **Verified data only.** Dimensions, footprints, ratings and prices come from datasheets,
    manufacturer files, measurements or the shop page. Never guess. If a value is missing or it is
    unclear which dimension is meant, ask; until answered, keep it as a named parameter and flag
    it in the review PDF.
-5. **Robust, not at the limit.** Generous derating, noise margins, tolerant of operator errors,
-   low emissions.
-6. **Easy for the hands** that solder, test and rework it.
+8. **Easy for the hands** that solder, test and rework it.
 
 ## 3 Prerequisites
 
@@ -99,6 +103,22 @@ Applies when IN-2 is "hand".
   warning is a failure).
 - **HS-8** Polarity and pin-1 marks stay visible after assembly.
 
+## 5a Labelling
+
+- **LB-1** Every part has its reference on the silkscreen, next to the part and readable after
+  assembly. Only where it truly does not fit it goes into the assembly drawing, and the review PDF
+  lists those parts.
+- **LB-2** Values on the board: next to the part if space allows, otherwise a value list on the other
+  side (reference → value).
+- **LB-3** Every connector pin and wire pad named by function (VBUS, D+, GND …), not only numbered.
+- **LB-4** Test points for every supply, every bus and every signal worth probing: exposed pad or open
+  via, named by net, with the expected value where one exists ("5V", "3V3 ±5 %").
+- **LB-5** Polarity, pin 1, LED colour or function, button function, switch positions: all marked.
+- **LB-6** Board name, revision and date on the board; a short commissioning check (what to measure
+  first) where space allows.
+- **LB-7** Minimum text height 1.0 mm, stroke 0.15 mm (fab minimum permitting), never over pads,
+  open vias or board edges; text reads from one or two directions only.
+
 ## 6 Circuit
 
 - **CI-1** Calculate voltage, current, power and temperature for every part. Record rating and
@@ -126,7 +146,8 @@ Applies when IN-2 is "hand".
 ## 7 Spare solder fields ("joker fields") on prototypes
 
 - **JF-1** Free copper on both sides is filled with unconnected, exposed solder fields, like
-  perfboard, for parts or wires forgotten in the design.
+  perfboard, for parts or wires forgotten in the design. Labelling (§5a) is placed first; fields
+  take only what is left.
 - **JF-2** Grid 2.54 mm, 0.5 mm gap between fields (an 0805 or a solder blob bridges it). At the
   edges the fields take the shape of the free area. Minimum 1.2 mm wide and 2 mm².
 - **JF-3** Clearance ≥ 1 mm to all functional copper and every hole, so nothing gets touched
@@ -212,7 +233,7 @@ with numbers, and show the result as a picture.
 ## 12 Review PDF
 
 One section each, A4. Portrait unless landscape clearly reads better. All images rendered fresh
-from the current sources (PR-4).
+from the current sources (PR-4), with a transparent background (white if the format has no alpha), never grey.
 
 1. **Overview.** Title, purpose (1–3 sentences), series size, cost per device and per series
    against the budget. A perspective exploded render from above in a realistic, product-photo
@@ -248,13 +269,27 @@ from the current sources (PR-4).
    calculation with maximum ambient temperature (EN-3). Radio check (EN-1).
 8. **Assembly check.** The six views of AC-4, the intersection table (AC-2), the assembly order
    (AC-3).
-9. **Instructions.**
+9. **Firmware and flashing** (one page). A prompt that lets a coding agent write the firmware in
+   Rust without asking back (FW-1), and next to it how to flash it (FW-2).
+10. **Instructions.**
    - what was found impossible, and why
    - open items: none. Do them now and rebuild the PDF. Only items that need the physical world
      (a measurement on a real part, a test print) may stay, each with what is needed to close it.
    - where to order the parts: suppliers, totals
    - where to order the PCB: maker, layers, thickness, material, surface finish, mask and silk
      colour, minimum track and drill, quantity, files to upload
+
+### Firmware page
+
+- **FW-1** The prompt is complete and self-contained: purpose; MCU or module with exact part number
+  and clock; a pin table (pin, net, direction, active level, pull-up/-down, safe state at reset);
+  every interface with protocol, speed and framing; power and sleep; behaviour on power-up, on errors
+  and without a host; timing and debouncing; limits the code must never exceed (currents, duty
+  cycles, pins that must never be driven); suggested crates and target triple; acceptance tests the
+  agent runs or describes. Unknowns are named as such, never filled in.
+- **FW-2** Flashing: the hardware needed (cable, adapter, programmer), the software with versions or
+  install commands, how to enter the bootloader, the exact commands, how to verify, how to recover
+  a bricked board.
 
 ## 13 Communication
 

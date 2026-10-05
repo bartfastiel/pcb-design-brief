@@ -212,7 +212,7 @@ def thin_map(stack, thin, size):
     return img, worst["z"]
 
 
-def check_part(name, path, lim, out_dir, size):
+def check_part(name, path, lim, out_dir, size, words):
     mesh = trimesh.load(path, force="mesh")
     mesh.merge_vertices()
     mesh.apply_translation([0, 0, -mesh.bounds[0][2]])
@@ -240,10 +240,10 @@ def check_part(name, path, lim, out_dir, size):
     }
     result["pass"] = all(v["pass"] for v in result.values())
 
-    tiles = [(label, render(mesh, kind, d, size)) for label, d in VIEWS]
+    tiles = [(label, render(mesh, kind, d, size)) for label, (_, d) in zip(words["views"], VIEWS)]
     if thin:
         img, z = thin_map(stack, thin, size)
-        tiles.append((f"thinnest layer z = {z} mm (red: narrower than {lim.min_width} mm)", img))
+        tiles.append((words["thin"].format(z=z, width=lim.min_width), img))
     f, small = font(26), font(20)
     tw = max(t.width for _, t in tiles)
     th = max(t.height for _, t in tiles) + 40
@@ -254,8 +254,8 @@ def check_part(name, path, lim, out_dir, size):
     verdict = "PASS" if result["pass"] else "FAIL"
     d.text((10, 8), f"{name}: {verdict}", font=f, fill=(0, 120, 0) if result["pass"] else (190, 0, 0))
     x = 10
-    for label, key in (("support needed", "overhang"), ("bridge ok", "bridge"),
-                       (f"bridge > {lim.bridge:g} mm", "long_bridge"), ("on the bed", "bed")):
+    for label, key in zip([w.format(bridge=lim.bridge) for w in words["legend"]],
+                          ("overhang", "bridge", "long_bridge", "bed")):
         d.rectangle([x, 50, x + 22, 72], fill=COLOURS[key])
         d.text((x + 30, 50), label, font=small, fill=(40, 40, 40))
         x += 60 + int(d.textlength(label, font=small))
@@ -276,6 +276,9 @@ def main():
         parser.add_argument("--" + key.replace("_", "-"), type=float, default=getattr(Limits, key),
                             help=f"default {getattr(Limits, key)}")
     parser.add_argument("--size", type=int, default=520, help="pixels per view, default %(default)s")
+    parser.add_argument("--view-names", default=",".join(v for v, _ in VIEWS), help="four view captions")
+    parser.add_argument("--legend", default="support needed,bridge ok,bridge > {bridge:g} mm,on the bed")
+    parser.add_argument("--thin-caption", default="thinnest layer z = {z} mm (red: narrower than {width} mm)")
     parser.add_argument("-o", "--out", default="printability")
     args = parser.parse_args()
     lim = Limits()
@@ -286,7 +289,8 @@ def main():
     report = {}
     for spec in args.parts:
         name, path = spec.split("=", 1)
-        report[name] = check_part(name, path, lim, args.out, args.size)
+        words = {"views": args.view_names.split(","), "legend": args.legend.split(","), "thin": args.thin_caption}
+        report[name] = check_part(name, path, lim, args.out, args.size, words)
         r = report[name]
         print(f"{name}: {'PASS' if r['pass'] else 'FAIL'}  overhang {r['overhang']['area_mm2']} mm2, "
               f"longest bridge {r['bridges']['longest']['span'] if r['bridges']['longest'] else 0} mm, "
