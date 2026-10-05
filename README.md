@@ -52,8 +52,10 @@ paths elsewhere.
 | [scripts/review/layer_images.py](scripts/review/layer_images.py) | §12.5 | one presence-coloured PNG per board layer from `kicad-cli` SVG exports |
 | [scripts/review/assembly_check.py](scripts/review/assembly_check.py) | AC-2, AC-4 | pairwise intersection volumes and six orthographic views with inward faces in signal red |
 | [scripts/review/tech_drawing.py](scripts/review/tech_drawing.py) | §12.7 | technical drawing sheet (three views plus isometric, main dimensions) from STL files |
+| [scripts/blender/layer_stack.py](scripts/blender/layer_stack.py) | §12.4 | photo-realistic exploded layer stack from a KiCad GLB export, with label anchors and link boxes as JSON |
+| [scripts/blender/exploded_scene.py](scripts/blender/exploded_scene.py) | §12.1, §12.3 | studio render of a JSON scene (STL, GLB, simple boxes, cables), screen boxes per part as JSON for PDF links |
 
-Each script prints `--help`.
+Python scripts print `--help`; the Blender scripts take their arguments after `--` (`blender -b --python script.py -- …`) and document them in their docstring. Tested with KiCad 10 and Blender 4.5.
 
 ## Questions this brief answers on purpose
 
