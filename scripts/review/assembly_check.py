@@ -115,6 +115,9 @@ def main():
     parser.add_argument("--scale", type=float, default=8, help="pixels per mm, default %(default)s")
     parser.add_argument("--max-edge", type=float, default=2.0,
                         help="mm; long triangles are split so each piece is classified on its own, default %(default)s")
+    parser.add_argument("--view-names", default="top,bottom,front,back,left,right",
+                        help="captions for the six views, comma separated")
+    parser.add_argument("--caption", default="{view}: red {share} % of visible area")
     parser.add_argument("-o", "--out", default="assembly-check")
     args = parser.parse_args()
 
@@ -147,9 +150,11 @@ def main():
     th = max(t.height for _, t in tiles) + 40
     sheet = Image.new("RGB", (cols * tw, (len(tiles) + cols - 1) // cols * th), (255, 255, 255))
     d = ImageDraw.Draw(sheet)
+    names = dict(zip(VIEWS, args.view_names.split(",")))
     for k, (view, img) in enumerate(tiles):
         x, y = (k % cols) * tw, (k // cols) * th
-        d.text((x + 10, y + 4), f"{view}: red {red[view] * 100:.1f} % of visible area", fill=(0, 0, 0), font=font)
+        d.text((x + 10, y + 4), args.caption.format(view=names[view], share=f"{red[view] * 100:.1f}"), fill=(0, 0, 0),
+               font=font)
         sheet.paste(img, (x, y + 40))
     sheet.save(os.path.join(args.out, "views.png"))
 
