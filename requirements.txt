@@ -1,0 +1,6 @@
+numpy
+pillow
+pymupdf
+trimesh
+manifold3d
+rtree

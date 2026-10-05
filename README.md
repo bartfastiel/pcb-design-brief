@@ -8,14 +8,11 @@ Hand it to a coding agent together with your project and the agent knows what "d
 which questions to ask once at the start, which checks must be green, how the documentation looks,
 and how to report where it deviated. The aim is a design that needs hardly any feedback rounds.
 
-[Deutsche Fassung](BRIEF.de.md)
-
 ## What is in it
 
 | File | Purpose |
 |---|---|
 | [BRIEF.md](BRIEF.md) | the brief itself (English, normative) |
-| [BRIEF.de.md](BRIEF.de.md) | German translation |
 | [templates/intake.md](templates/intake.md) | the intake questions, project overrides and open assumptions; copy into the project |
 | [skills/pcb-design-brief/SKILL.md](skills/pcb-design-brief/SKILL.md) | entry point for agents that load skills (e.g. Claude Code) |
 | [scripts/](scripts/) | KiCad and review helpers, see below |
@@ -42,7 +39,7 @@ Then start with: *"Design the board for … following the PCB design brief."* Th
 
 ## Scripts
 
-All scripts are standalone, take paths as arguments and write nothing outside the given output
+Install the Python packages with `pip install -r requirements.txt`. All scripts are standalone, take paths as arguments and write nothing outside the given output
 directory. KiCad scripts need the Python that ships with KiCad (it contains `pcbnew`), e.g.
 `"C:\Program Files\KiCad\9.0\bin\python.exe"` on Windows or `/usr/lib/kicad/bin/python3` style
 paths elsewhere.
