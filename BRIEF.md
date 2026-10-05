@@ -23,7 +23,8 @@ Anything unknown that blocks nothing becomes a named, flagged assumption, not a 
 | IN-6 | Delivery country and currency | shops, VAT, shipping | ask |
 | IN-7 | Fixed mechanics: board outline, connector positions, enclosure, mounting | layout | none fixed |
 | IN-8 | Environment: temperature, indoor/outdoor, mains, radio, mechanical load | ratings | indoor, 0–40 °C |
-| IN-9 | May tools be installed? May a browser be automated on the user's behalf for supplier data? | prerequisites, sourcing | ask |
+| IN-9 | May tools be installed? May a browser be automated on the user's behalf for supplier data? Which API keys are available? | prerequisites, sourcing | ask |
+| IN-10 | What to optimise, in order: cost per series, board size, weight, assembly effort, heat, robustness | design-to-cost loop (§6a) | cost, then robustness |
 
 ## 2 Principles, in priority order
 
@@ -143,6 +144,24 @@ Applies when IN-2 is "hand".
 - **CI-6** Every value change is checked against the datasheet again and updates the table.
 - **CI-7** Expensive or hard-to-get parts: reconsider the circuit (§10).
 
+## 6a Design to cost, during the design
+
+Prices and specifications are inputs to the design, not a list made at the end.
+
+- **DC-1** From the first schematic on, query the parts through APIs ([docs/sourcing-apis.md](docs/sourcing-apis.md)):
+  verify each candidate's specification against the requirement (CI-2) and get stock and price breaks for the
+  series quantity.
+- **DC-2** Search the alternatives systematically and keep the better ones:
+  - consolidate values and packages where the circuit tolerates it (fewer distinct parts: fewer reels, line
+    fees, feeder setups, mistakes);
+  - replace one part by two smaller ones or two by one larger where that is cheaper, smaller or easier to place;
+  - prefer parts several suppliers stock; avoid single-source parts unless unavoidable.
+- **DC-3** Cost model per series: parts at the series quantity with packaging units and price breaks, per-line
+  minimums, board area, assembly (per placement, per distinct part, setup), shipping and import costs.
+- **DC-4** Optimise in the order of IN-10; rerun the loop after every change of schematic or layout and record each
+  iteration (what changed, cost, area, part count, distinct parts).
+- **DC-5** The review PDF shows the final, optimised solution with its numbers and the step from the first version.
+
 ## 7 Spare solder fields ("joker fields") on prototypes
 
 - **JF-1** Free copper on both sides is filled with unconnected, exposed solder fields, like
@@ -210,6 +229,8 @@ with numbers, and show the result as a picture.
 
 ## 10 Sourcing
 
+- **SO-0** APIs first ([docs/sourcing-apis.md](docs/sourcing-apis.md)). Public product pages only for single parts,
+  slowly; at any captcha or bot wall stop and mark the part "check manually" with its link.
 - **SO-1** Check the usual electronics shops for the delivery country (IN-6), preferred ones
   first (IN-5). Per supplier: availability for the series quantity, stock, delivery date, net
   unit price, shipping, minimum order value, free-shipping threshold.
@@ -221,6 +242,9 @@ with numbers, and show the result as a picture.
   no logins, no purchases, polite pace. Keep the raw data with its date.
 - **SO-6** Use the series quantity with packaging units and price breaks. Show cost per device
   and per series against the budget.
+- **SO-7** PCB manufacture: at least three offers (fab, settings, quantity, shipping, import costs, lead time,
+  landed total). Assembly: at least two offers even when hand soldering is planned, so the make-or-buy decision
+  is visible.
 
 ## 11 Deliverables
 
@@ -246,7 +270,8 @@ from the current sources (PR-4), with a transparent background (white if the for
 4. **Layer stack.** Perspective exploded view, layers pulled apart, realistic look. From top:
    top parts, top silkscreen, top mask, top copper, core (holes clearly visible),
    bottom copper, bottom mask, bottom silkscreen, bottom parts. More layers for multilayer
-   boards; empty layers are left out. Every layer keeps its true thickness relative to length and width;
+   boards; empty layers are left out. The board's dimensions (length × width × thickness, area, weight)
+   stand prominently on this page. Every layer keeps its true thickness relative to length and width;
    only the gaps between the layers are invented. Every layer is shown as it is stacked in the product, so
    the bottom side appears as seen from above (mirrored text). Each layer has a black dot with a
    horizontal leader line to its label: name, material, properties, thickness. Layer and label
@@ -261,7 +286,8 @@ from the current sources (PR-4), with a transparent background (white if the for
    free-shipping threshold). Columns: Ref, part (deep link), key data and function, order
    number, series demand / supplier stock, delivery date for that quantity, net unit price.
    Below each table a red list of parts not available there. Special parts as separate entries
-   with their extra sources. Include the mechanics (SO-4).
+   with their extra sources. Include the mechanics (SO-4), the PCB and assembly offers (SO-7) and the
+   design-to-cost result (DC-5).
 7. **Enclosure, technical.** One sheet with all printed parts: three orthographic views plus
    one isometric view each, main dimensions, first-angle projection (ISO). The printability sheets
    of FDM-8. Screws and inserts in

@@ -43,7 +43,7 @@ def main():
         if not os.path.exists(ses):
             raise SystemExit(f"Freerouting wrote no session; log: {os.path.join(work, 'freerouting.log')}")
         for track in list(board.GetTracks()):
-            board.Remove(track)
+            board.Delete(track)
         if not pcbnew.ImportSpecctraSES(board, ses):
             raise SystemExit("Specctra session import failed")
         board.BuildConnectivity()
