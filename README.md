@@ -18,6 +18,7 @@ and how to report where it deviated. The aim is a design that needs hardly any f
 | [docs/sourcing-apis.md](docs/sourcing-apis.md) | distributor, aggregator, fab and CAD-data APIs for prices, stock and specs |
 | [pcbtools/](pcbtools/), [scripts/](scripts/) | the tools, see below |
 | [docs/automation.md](docs/automation.md) | which steps need the agent, which a tool does |
+| [docs/assembly-documents.md](docs/assembly-documents.md) | assembly sheet, bag labels and test table for building the board by hand |
 
 The brief in one breath: ask once, then work alone; function, robustness and cost first, then perfect
 labelling; verified data only; prices and specs from APIs during the design, not after it; big exposed pads and
