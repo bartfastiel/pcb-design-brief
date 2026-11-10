@@ -94,11 +94,17 @@ A later finding that hurts an earlier phase sends the work back there.
 
 Applies when IN-2 is "hand".
 
-- **HS-1** Pads clearly larger than nominal: chip pads extended outwards by 0.5–1 mm so the tip
-  touches copper, not the part. Thermally heavy parts (MOSFET tab, connectors) get an extra
-  exposed copper area to preheat.
+- **HS-1** Pads larger than nominal, but a middle ground: chip pads extended outwards by about 0.5 mm so
+  the tip touches copper, not the part. Much more and short parts (an 0805 ceramic is 2 mm long) float
+  and skew on the solder; the KiCad `_HandSolder` 0805 pads are already at the upper end. Thermally heavy
+  parts (MOSFET tab, connectors) get an extra exposed copper area to preheat.
 - **HS-2** Prefer 0805/1206, SOT-23, SMA, DPAK. Smaller packages, QFN or BGA only when
-  unavoidable, and justified.
+  unavoidable, and justified. SOT-23 is the limit for hand soldering: give it pads extended outwards
+  (≥ 0.5 mm), and check whether a larger package with the same function exists (SOT-89, SOT-223, or
+  TO-92 through-hole on prototypes); the review PDF names the alternative and why it was not taken.
+- **HS-2a** Room between parts, not only pad size: ≥ 1.5 mm copper gap between pads of neighbouring
+  parts, so the tip fits between them. A column of 0805 parts at 2.54 mm pitch leaves 1.1 mm and
+  makes correct pads feel too small.
 - **HS-3** Spread parts out; room for the iron beats short tracks, even if a part no longer sits
   right at its pin.
 - **HS-4** Clearance target ≥ 0.5 mm. Go down to the fab minimum only where unavoidable, and
@@ -116,7 +122,9 @@ Applies when IN-2 is "hand".
 
 - **LB-1** Every part has its reference on the silkscreen, next to the part and readable after
   assembly. Only where it truly does not fit it goes into the assembly drawing, and the review PDF
-  lists those parts.
+  lists those parts. Unambiguous: each reference sits closer to its own part than to any other part,
+  never centred between two parts of the same kind (two facing SOT-23 with stacked "Q2"/"Q3" are a
+  guessing game). A script checks it: the nearest part body to each reference text is its own part.
 - **LB-2** Values on the board: next to the part if space allows, otherwise a value list on the other
   side (reference → value).
 - **LB-3** Every connector pin and wire pad named by function (VBUS, D+, GND …), not only numbered.
@@ -127,6 +135,13 @@ Applies when IN-2 is "hand".
   first) where space allows.
 - **LB-7** Minimum text height 1.0 mm, stroke 0.15 mm (fab minimum permitting), never over pads,
   open vias or board edges; text reads from one or two directions only.
+- **LB-8** Reference numbers follow the board, not the schematic: once placement is stable, annotate
+  geographically (per side, top to bottom, left to right), so R1 is where one starts looking.
+- **LB-9** Rulers and scales on the silkscreen start with 0 at a board edge.
+- **LB-10** Side and rotation at a glance: on the assembly side a filled silkscreen triangle in the top-left
+  corner with the side name ("TOP"), on the other side a hollow one with its name. The assembly sheet draws the
+  same mark at the same corner, so board and paper are matched by turning until the triangles meet. Never rely
+  on a connector or module outline for orientation.
 
 ## 6 Circuit
 
@@ -162,7 +177,10 @@ Prices and specifications are inputs to the design, not a list made at the end.
   series quantity.
 - **DC-2** Search the alternatives systematically and keep the better ones:
   - consolidate values and packages where the circuit tolerates it (fewer distinct parts: fewer reels, line
-    fees, feeder setups, mistakes);
+    fees, feeder setups, mistakes). One value, one package: never the same value in 0805 and 1206 on
+    one board; if one position needs the larger package, all positions of that value take it. Prefer
+    reusing a value already on the board (a pull-up of 100 k instead of 33 k) where the calculation
+    (CI-1) allows;
   - replace one part by two smaller ones or two by one larger where that is cheaper, smaller or easier to place;
   - prefer parts several suppliers stock; avoid single-source parts unless unavoidable.
 - **DC-3** Cost model per series: parts at the series quantity with packaging units and price breaks, per-line
@@ -269,7 +287,8 @@ with numbers, and show the result as a picture.
 - enclosure print files (STL or 3MF) and their source (SCAD, STEP, …)
 - the review PDF
 - calculation table and supplier data with retrieval date
-- for hand assembly: the assembly sheet, the bag labels and the commissioning test table (§12a)
+- for hand assembly, always and not on request: the assembly sheet, the bag labels and the commissioning test
+  table (§12a)
 
 ## 12 Review PDF
 
@@ -359,17 +378,27 @@ Layout details and the reasoning behind each rule: [docs/assembly-documents.md](
 - **AS-5** A soldering order (flat parts first, tall and heat-heavy parts and wires last), a box of rules for
   parts that are easy to confuse (same package, unmarked ceramics, two values in two sizes), and the test table
   (CT-1).
+- **AS-6** Per part the first pin to tack, marked on the sheet (e.g. a small "1st" or a filled dot at that pad).
+  The rule behind it: tin one pad, place the part with tweezers, reflow that pad to tack it, check alignment
+  and polarity, solder the other pins, then reflow the first one again. The tacked pad is the one that heats
+  quickly, never the one on a ground plane:
+  - two-pad parts: the pad not on the plane;
+  - SOT-23: the lone pin on its own side (it fixes the part, the two opposite pins then show any skew);
+  - electrolytic: polarity checked first, then tack the + pad; the GND pad on the plane last, with more heat
+    and dwell time, when the part can no longer move;
+  - DPAK: a leg first, the tab last with the hottest tip (HA-1).
 
 ### Bag labels
 
 - **BG-1** One label per bag or reel of loose parts, none for modules or the MCU board. A4 portrait, 3 × 5
   labels of 65 × 56 mm, printed double-sided so both faces of a folded or taped label show the same text: the
   back page mirrors the columns for long-edge duplex.
-- **BG-2** Each label: board name and revision; the reference designators large; the main value large and minor
+- **BG-2** Each label: board name and revision; the reference designators as the largest text on the label
+  (they are what the hand searches for, more often than the value); the main value large and minor
   specs small; package and quantity; a drawing of the real package as it lies on the board with the pin roles
   (bold E or S "→ GND", cathode band, + side, tab = D); a one-line hint where it goes.
 - **BG-3** A mini-map of the board on every label: all pads grey, the target pads black and boxed with their
-  reference. Labels never overlap other labels or the outline; a per-reference side override exists for crowded
+  reference written right at the part on the map, large enough to read without searching. Labels never overlap other labels or the outline; a per-reference side override exists for crowded
   spots.
 - **BG-4** Proof before printing: rasterise both pages and look (PR-5); no clipped or wrapped text, the
   front and back of each label match.
