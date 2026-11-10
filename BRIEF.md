@@ -368,7 +368,8 @@ Layout details and the reasoning behind each rule: [docs/assembly-documents.md](
 - **AS-2** The board's own reference designators (R5, Q1, C3 …) are the only reference, on the sheet, on the
   labels and in the test table. Never introduce a second numbering. Mark parts with hairline circles or
   outlines, black text inside; no leader lines across the board.
-- **AS-3** Polarity and pin roles drawn at the part: electrolytic + side, diode cathode band, the transistor or
+- **AS-3** Polarity and pin roles drawn at the part: electrolytic + side together with the outline of its plastic
+  base as it looks from above (the two chamfered corners on the + side, the square end on −), diode cathode band, the transistor or
   FET pin that goes to GND (E or S), the DPAK tab and what it is (D). Parts whose reference is not on the
   silkscreen (LB-1 exceptions) are listed.
 - **AS-4** Off-board wires: at each pad the signal name and the wire colour, and a thick line from the pad into
