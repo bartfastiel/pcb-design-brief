@@ -20,6 +20,7 @@ take data files the agent writes, and produce files and numbers the agent reads.
 | Renders | look at them (PR-5) | `layer_images`, Blender `exploded_scene`, `layer_stack` |
 | Review PDF | the prose: purpose, decisions, deviations | `review_pdf` lays out everything from `review.json` |
 | Firmware | the prompt's content | — |
+| Hand assembly (§12a) | soldering order, hints for parts that look alike, expected readings over all paths (CT-2) | — so far; spec for a generator in [assembly-documents.md](assembly-documents.md) |
 
 Rules of thumb for the agent:
 
